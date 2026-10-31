@@ -828,6 +828,7 @@ class Chapter5(ThreeDScene):
         lower = -1.7
         upper_initial = 1.3
         upper_compressed = -0.2
+        vessel_center_x = 0.0
         vessel = Cylinder(
             radius=radius,
             height=3.0,
@@ -838,8 +839,7 @@ class Chapter5(ThreeDScene):
             stroke_color=BLUE_A,
             stroke_opacity=0.16,
             stroke_width=0.5,
-        ).move_to(np.array([-2.35, -0.2, 0]))
-        vessel_center_x = -2.35
+        ).move_to(np.array([vessel_center_x, -0.2, 0]))
         self.play(Create(vessel), run_time=1)
 
         piston = Cylinder(
@@ -872,13 +872,14 @@ class Chapter5(ThreeDScene):
             )
         self.play(FadeIn(piston), FadeIn(gas), run_time=1)
 
+        graph_center = RIGHT * 4.07 + DOWN * 0.25
         graph_axes = Axes(
             x_range=[0, 5, 1],
             y_range=[0, 5, 1],
             x_length=3.7,
             y_length=2.8,
             axis_config={"color": GREY_B, "include_tip": True, "stroke_width": 2},
-        ).move_to(RIGHT * 2.35 + DOWN * 0.25)
+        ).move_to(graph_center)
         curve = graph_axes.plot(
             lambda volume: 4 / volume,
             x_range=[0.8, 4.5],
@@ -886,13 +887,13 @@ class Chapter5(ThreeDScene):
             stroke_width=4,
         )
         invariant_label = _text("Boyle: PV = sabit", 23, YELLOW).move_to(
-            RIGHT * 2.35 + UP * 2.0
+            graph_center + UP * 2.25
         )
         volume_label = _text("Hacim V", 17, GREY_A).move_to(
-            RIGHT * 2.35 + DOWN * 2.0
+            graph_center + DOWN * 1.75
         )
         pressure_label = _text("P", 17, GREY_A).move_to(
-            RIGHT * 0.45 + DOWN * 0.1
+            graph_center + LEFT * 1.9 + UP * 0.15
         )
         pressure_label.rotate(90 * DEGREES)
         self.add_fixed_in_frame_mobjects(
@@ -930,16 +931,99 @@ class Chapter5(ThreeDScene):
         measurement_label = _text(f"Son {observation_time:.0f} saniyede", 17, GREY_A).move_to(
             LEFT * 4.65 + UP * 0.42
         )
+        table_width = 2.45
+        table_height = 1.8
+        table_center = LEFT * 4.75 + DOWN * 0.88
+        table_left = table_center[0] - table_width / 2
+        table_right = table_center[0] + table_width / 2
+        table_top = table_center[1] + table_height / 2
+        table_row_height = table_height / 6
+        column_divider = table_center[0] + 0.32
+        measurement_table = VGroup(
+            Rectangle(
+                width=table_width,
+                height=table_height,
+                fill_color=BLUE_E,
+                fill_opacity=0.3,
+                stroke_color=BLUE_A,
+                stroke_width=1.2,
+            ).move_to(table_center),
+            Rectangle(
+                width=table_width - 0.04,
+                height=table_row_height - 0.02,
+                fill_color=BLUE_D,
+                fill_opacity=0.75,
+                stroke_width=0,
+            ).move_to(
+                [table_center[0], table_top - table_row_height / 2, 0]
+            ),
+            Line(
+                [column_divider, table_top - table_height, 0],
+                [column_divider, table_top, 0],
+                color=BLUE_A,
+                stroke_width=1,
+            ),
+            *[
+                Line(
+                    [table_left, table_top - row * table_row_height, 0],
+                    [table_right, table_top - row * table_row_height, 0],
+                    color=BLUE_A,
+                    stroke_width=0.8,
+                )
+                for row in range(1, 6)
+            ],
+            _text("Ölçüm", 13, WHITE).move_to(
+                [table_center[0] - 0.62, table_top - table_row_height / 2, 0]
+            ),
+            _text("Çarpma", 13, YELLOW).move_to(
+                [table_center[0] + 0.76, table_top - table_row_height / 2, 0]
+            ),
+            *[
+                _text(label, 12, GREY_A).move_to(
+                    [
+                        table_center[0] - 0.62,
+                        table_top - (row + 1.5) * table_row_height,
+                        0,
+                    ]
+                )
+                for row, label in enumerate(
+                    ["Başlangıç", "1. kademe", "2. kademe", "3. kademe", "4. kademe"]
+                )
+            ],
+        )
         self.add_fixed_in_frame_mobjects(
-            phase_label, counter_heading, counter, measurement_label
+            phase_label,
+            counter_heading,
+            counter,
+            measurement_label,
+            measurement_table,
         )
         self.play(
             FadeIn(phase_label),
             FadeIn(counter_heading),
             FadeIn(counter),
             FadeIn(measurement_label),
+            FadeIn(measurement_table),
             run_time=0.6,
         )
+
+        def record_collision_count(count: int, row: int) -> None:
+            cell_position = np.array(
+                [
+                    table_center[0] + 0.76,
+                    table_top - (row + 1.5) * table_row_height,
+                    0,
+                ]
+            )
+            count_copy = counter.copy()
+            count_copy.clear_updaters()
+            count_copy.become(_text(str(count), 34, YELLOW).move_to(counter_position))
+            self.add_fixed_in_frame_mobjects(count_copy)
+            self.play(
+                count_copy.animate.move_to(cell_position).scale(0.5),
+                rate_func=smooth,
+                run_time=0.65,
+            )
 
         def animate_gas_interval(
             positions: np.ndarray,
@@ -1055,6 +1139,7 @@ class Chapter5(ThreeDScene):
         )
         baseline_hits = int(baseline_totals[-1])
         current_positions = baseline_paths
+        record_collision_count(baseline_hits, 0)
 
         question = "Pistonu yavaşça aşağı indirirsem ne değişir?"
         card, correct = _prediction_prompt(self, question, "ARTAR")
@@ -1086,6 +1171,7 @@ class Chapter5(ThreeDScene):
             )
             stage_counts.append(int(measured_totals[-1]))
             current_positions = measured_positions
+            record_collision_count(stage_counts[-1], stage_number)
 
         explanation = _text(
             f"Aynı 4 saniyede piston çarpması: {baseline_hits} → {stage_counts[-1]}. "
