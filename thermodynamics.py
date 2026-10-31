@@ -117,7 +117,7 @@ def _simulate_gas_paths(
     initial_velocities: np.ndarray | None = None,
     samples_per_second: int = 24,
     substeps: int = 4,
-) -> tuple[np.ndarray, np.ndarray, list[np.ndarray], np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, list[np.ndarray], list[np.ndarray], np.ndarray]:
     """Önceden hesaplanan yolları, çarpışma sayılarını ve olay zamanlarını üret."""
     rng = np.random.default_rng(seed)
     positions = initial_positions.copy()
@@ -132,7 +132,8 @@ def _simulate_gas_paths(
     frame_count = int(duration * samples_per_second) + 1
     paths = np.empty((frame_count, len(positions), 3), dtype=float)
     hit_totals = np.zeros(frame_count, dtype=int)
-    hit_times: list[list[float]] = [[] for _ in range(len(positions))]
+    collision_times: list[list[float]] = [[] for _ in range(len(positions))]
+    piston_hit_times: list[list[float]] = [[] for _ in range(len(positions))]
     paths[0] = positions
     hits = 0
     dt = 1 / (samples_per_second * substeps)
@@ -149,6 +150,8 @@ def _simulate_gas_paths(
             radial_positions[:, 0] -= center_x
             radial = np.linalg.norm(radial_positions, axis=1)
             side_hit = radial > radius
+            for molecule_index in np.flatnonzero(side_hit):
+                collision_times[molecule_index].append(elapsed)
             if np.any(side_hit):
                 normals = radial_positions[side_hit] / radial[side_hit, np.newaxis]
                 radial_speed = np.sum(velocities[side_hit][:, (0, 2)] * normals, axis=1)
@@ -161,12 +164,14 @@ def _simulate_gas_paths(
 
             top_hit = positions[:, 1] > current_upper
             bottom_hit = positions[:, 1] < lower
+            for molecule_index in np.flatnonzero(top_hit | bottom_hit):
+                collision_times[molecule_index].append(elapsed)
             positions[top_hit, 1] = 2 * current_upper - positions[top_hit, 1]
             velocities[top_hit, 1] = 2 * wall_velocity - velocities[top_hit, 1]
             positions[bottom_hit, 1] = 2 * lower - positions[bottom_hit, 1]
             velocities[bottom_hit, 1] *= -1
             for molecule_index in np.flatnonzero(top_hit):
-                hit_times[molecule_index].append(elapsed)
+                piston_hit_times[molecule_index].append(elapsed)
             hits += int(np.count_nonzero(top_hit))
 
         paths[frame] = positions
@@ -175,7 +180,8 @@ def _simulate_gas_paths(
     return (
         paths,
         hit_totals,
-        [np.asarray(events) for events in hit_times],
+        [np.asarray(events) for events in collision_times],
+        [np.asarray(events) for events in piston_hit_times],
         velocities,
     )
 
@@ -1062,7 +1068,7 @@ class Chapter5(ThreeDScene):
             wall_end: float,
             label: str,
         ) -> tuple[np.ndarray, np.ndarray, list[np.ndarray], np.ndarray]:
-            paths, totals, events, final_velocities = _simulate_gas_paths(
+            paths, totals, events, piston_events, final_velocities = _simulate_gas_paths(
                 positions,
                 duration,
                 inner_radius,
@@ -1075,8 +1081,8 @@ class Chapter5(ThreeDScene):
             )
             clock = ValueTracker(0)
             all_events = (
-                np.sort(np.concatenate(events))
-                if any(len(entry) for entry in events)
+                np.sort(np.concatenate(piston_events))
+                if any(len(entry) for entry in piston_events)
                 else np.array([])
             )
 
@@ -1101,8 +1107,8 @@ class Chapter5(ThreeDScene):
                 ):
                     now = timer.get_value()
                     age = last_event_age(collisions, now)
-                    active = age < 0.1
-                    pulse = np.sin(np.pi * age / 0.1) if active else 0.0
+                    active = age < 0.05
+                    pulse = np.sin(np.pi * age / 0.05) if active else 0.0
                     scale = 1 + 0.7 * pulse
                     mob.scale(scale / state["scale"])
                     state["scale"] = scale
