@@ -184,16 +184,28 @@ def _text(content: str, size: float = 30, color=WHITE) -> Text:
     return Text(content, font=FONT, font_size=size, color=color)
 
 
-def _prediction_prompt(scene: ThreeDScene, question: str, correct: str):
+def _prediction_prompt(
+    scene: ThreeDScene,
+    question: str,
+    correct: str,
+    choice_buff: float = 0.7,
+    labeled_choices: bool = False,
+):
     question_text = _text(question, 30, YELLOW).to_edge(UP, buff=0.42)
+    choice_labels = ("ARTAR", "AZALIR", "DEĞİŞMEZ")
+    displayed_choices = (
+        tuple(f"{letter}) {choice}" for letter, choice in zip("ABC", choice_labels))
+        if labeled_choices
+        else choice_labels
+    )
     choices = VGroup(
-        *[_text(choice, 28, WHITE) for choice in ("ARTAR", "AZALIR", "DEĞİŞMEZ")]
-    ).arrange(RIGHT, buff=0.7)
+        *[_text(choice, 28, WHITE) for choice in displayed_choices]
+    ).arrange(RIGHT, buff=choice_buff)
     choices.to_edge(DOWN, buff=0.55)
     card = VGroup(question_text, choices)
     scene.add_fixed_in_frame_mobjects(card)
     scene.wait(5)
-    return card, choices[("ARTAR", "AZALIR", "DEĞİŞMEZ").index(correct)]
+    return card, choices[choice_labels.index(correct)]
 
 
 def _close_prediction(scene: ThreeDScene, card: VGroup, correct: Text, explanation: Text):
@@ -886,9 +898,7 @@ class Chapter5(ThreeDScene):
             color=YELLOW,
             stroke_width=4,
         )
-        invariant_label = _text("Boyle: PV = sabit", 23, YELLOW).move_to(
-            graph_center + UP * 2.25
-        )
+        invariant_label = _text("Boyle: PV = sabit", 30, YELLOW)
         volume_label = _text("Hacim V", 17, GREY_A).move_to(
             graph_center + DOWN * 1.75
         )
@@ -896,6 +906,26 @@ class Chapter5(ThreeDScene):
             graph_center + LEFT * 1.9 + UP * 0.15
         )
         pressure_label.rotate(90 * DEGREES)
+        volume_point = Dot(graph_axes.c2p(3, 4 / 3), color=ORANGE, radius=0.09)
+        graph_group = VGroup(
+            graph_axes,
+            curve,
+            volume_label,
+            pressure_label,
+            volume_point,
+        )
+        graph_group.scale(
+            0.7,
+            about_point=graph_center + RIGHT * 1.95,
+        )
+        graph_center_after_scale = graph_axes.get_center()
+        invariant_label.move_to(
+            [graph_center_after_scale[0], 1.55, graph_center_after_scale[2]]
+        )
+        volume_label.move_to(
+            [graph_center_after_scale[0], -1.78, graph_center_after_scale[2]]
+        )
+        VGroup(graph_axes, curve, pressure_label, volume_point).shift(DOWN * 0.25)
         self.add_fixed_in_frame_mobjects(
             graph_axes, curve, invariant_label, volume_label, pressure_label
         )
@@ -908,7 +938,6 @@ class Chapter5(ThreeDScene):
             run_time=1.2,
         )
 
-        volume_point = Dot(graph_axes.c2p(3, 4 / 3), color=ORANGE, radius=0.09)
         self.add_fixed_in_frame_mobjects(volume_point)
         self.play(FadeIn(volume_point))
         self.remove_fixed_in_frame_mobjects(title, condition)
@@ -1142,7 +1171,9 @@ class Chapter5(ThreeDScene):
         record_collision_count(baseline_hits, 0)
 
         question = "Pistonu yavaşça aşağı indirirsem ne değişir?"
-        card, correct = _prediction_prompt(self, question, "ARTAR")
+        card, correct = _prediction_prompt(
+            self, question, "ARTAR", choice_buff=0.4, labeled_choices=True
+        )
 
         stage_upper_levels = np.linspace(
             inner_upper_initial, upper_compressed - 0.12, 5
