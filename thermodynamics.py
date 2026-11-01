@@ -1,9 +1,10 @@
-"""Termodinamik yolculuğu — ilk beş bölüm.
+"""Termodinamik yolculuğu — ilk sekiz bölüm.
 
 Önizleme:
     manim -pql thermodynamics.py Chapter1
     manim -pql thermodynamics.py Chapter2
     manim -pql thermodynamics.py Chapter3 Chapter4 Chapter5
+    manim -pql thermodynamics.py Chapter6 Chapter7 Chapter8
 """
 
 from __future__ import annotations
@@ -41,6 +42,24 @@ NARRATION = {
     "chapter_5": [
         "Sıcaklık ve mol sayısı sabitken pistonu aşağı indirirsek aynı gaz daha küçük bir hacme sıkışır.",
         "Moleküller duvarlara daha sık çarpar. Böylece basınç yükselir ve PV çarpımı sabit kalır.",
+    ],
+    "chapter_6": [
+        "Kabın hacmi ve gaz miktarı sabit. Isıtınca moleküllerin ortalama kinetik enerjisi yükselir.",
+        "Isıtıcı enerji aktarır. Moleküller hızlanır; duvara çarptıklarında daha büyük momentum değişimi oluştururlar.",
+        "Bir moleküle yakından bakalım: aynı sürede daha uzun yol alır ve duvara daha sık çarpar.",
+        "Mutlak sıcaklık Kelvin cinsinden ölçülür. Hacim sabitken basınç sıcaklıkla doğru orantılıdır.",
+    ],
+    "chapter_7": [
+        "Pistonun üstündeki ağırlık değişmediği için dış basınç sabit kalır.",
+        "Gazı ısıtınca moleküller hızlanır; piston yükselerek gazın daha büyük bir hacme yayılmasına izin verir.",
+        "Basınç ve gaz miktarı sabitken hacim, Kelvin cinsinden sıcaklıkla doğru orantılıdır.",
+    ],
+    "chapter_8": [
+        "Sıcaklık ve hacim sabitken kaba daha fazla gaz molekülü ekliyoruz.",
+        "Daha çok molekül, duvarlara aynı sürede daha çok çarpışma demektir; basınç artar.",
+        "N, gazdaki toplam tanecik sayısıdır. n ise madde miktarıdır ve mol cinsinden ölçülür.",
+        "N alt A, Avogadro sabitidir; bir moldaki tanecik sayısını verir. Değeri yaklaşık 6,022 × 10 üzeri 23 bölü moldür.",
+        "Bu yüzden toplam tanecik sayısı N, mol miktarı n ile Avogadro sabiti N alt A'nın çarpımına eşittir.",
     ],
 }
 
@@ -1222,3 +1241,855 @@ class Chapter5(ThreeDScene):
         self.add_fixed_in_frame_mobjects(summary)
         self.play(FadeIn(summary), run_time=0.7)
         self.wait(4)
+
+
+def _gas_particles(
+    positions: np.ndarray,
+    colors: list,
+    radius: float = 0.065,
+) -> VGroup:
+    return VGroup(
+        *[
+            Dot(point=point, radius=radius, color=colors[index], fill_opacity=0.95)
+            for index, point in enumerate(positions)
+        ]
+    )
+
+
+def _gas_positions(
+    count: int,
+    center_x: float,
+    radius: float,
+    lower: float,
+    upper: float,
+    seed: int,
+) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    radial = radius * 0.72 * np.sqrt(rng.random(count))
+    angles = rng.uniform(0, TAU, count)
+    return np.column_stack(
+        (
+            center_x + radial * np.cos(angles),
+            rng.uniform(lower + 0.18, upper - 0.18, count),
+            radial * np.sin(angles),
+        )
+    )
+
+
+def _gas_vessel(
+    center_x: float,
+    radius: float,
+    bottom: float,
+    top: float,
+    visual_top: float | None = None,
+) -> Cylinder:
+    visual_top = top if visual_top is None else visual_top
+    return Cylinder(
+        radius=radius,
+        height=visual_top - bottom,
+        direction=UP,
+        resolution=(20, 12),
+        fill_color=BLUE_E,
+        fill_opacity=0.08,
+        stroke_color=BLUE_A,
+        stroke_opacity=0.2,
+        stroke_width=0.65,
+    ).move_to(np.array([center_x, (visual_top + bottom) / 2, 0]))
+
+
+def _gas_piston(center_x: float, radius: float, top: float) -> Cylinder:
+    return Cylinder(
+        radius=radius * 0.96,
+        height=0.13,
+        direction=UP,
+        resolution=(20, 12),
+        fill_color=GREY_B,
+        fill_opacity=0.95,
+        stroke_color=WHITE,
+    ).move_to(np.array([center_x, top, 0]))
+
+
+def _play_gas_measurement(
+    scene: ThreeDScene,
+    gas: VGroup,
+    positions: np.ndarray,
+    velocities: np.ndarray | None,
+    *,
+    duration: float,
+    radius: float,
+    lower: float,
+    upper_start: float,
+    upper_end: float,
+    center_x: float,
+    counter: Text,
+    moving_objects: list[Mobject] | None = None,
+    seed: int = 81,
+) -> tuple[np.ndarray, np.ndarray, int]:
+    paths, totals, collision_events, _, final_velocities = _simulate_gas_paths(
+        positions,
+        duration,
+        radius,
+        lower,
+        upper_start,
+        seed=seed,
+        center_x=center_x,
+        upper_end=upper_end,
+        initial_velocities=velocities,
+    )
+    clock = ValueTracker(0)
+    original_colors = [molecule.get_color() for molecule in gas]
+    pulse_states = [
+        {"scale": 1.0, "active": False} for _ in range(len(gas))
+    ]
+
+    def last_collision_age(event_times: np.ndarray, now: float) -> float:
+        previous = np.searchsorted(event_times, now, side="right") - 1
+        return now - event_times[previous] if previous >= 0 else duration
+
+    for index, molecule in enumerate(gas):
+        molecule.clear_updaters()
+        path = paths[:, index, :]
+        events = collision_events[index]
+        state = pulse_states[index]
+        base_color = original_colors[index]
+
+        def update_molecule(
+            mob,
+            _dt=0,
+            p=path,
+            timer=clock,
+            hits=events,
+            pulse_state=state,
+            molecule_color=base_color,
+        ):
+            now = timer.get_value()
+            age = last_collision_age(hits, now)
+            active = age < 0.05
+            pulse = np.sin(np.pi * age / 0.05) if active else 0.0
+            scale = 1 + 0.7 * pulse
+            mob.scale(scale / pulse_state["scale"])
+            pulse_state["scale"] = scale
+            if active != pulse_state["active"]:
+                mob.set_color(RED if active else molecule_color)
+                pulse_state["active"] = active
+            mob.move_to(_sample_path(p, now))
+
+        molecule.add_updater(update_molecule)
+
+    counter.clear_updaters()
+    counter_state = {"count": None}
+    counter_position = counter.get_center().copy()
+
+    def update_counter(mob, _dt=0):
+        frame = min(int(clock.get_value() * 24), len(totals) - 1)
+        count = int(totals[frame])
+        if count != counter_state["count"]:
+            mob.become(_text(str(count), 34, YELLOW))
+            counter_state["count"] = count
+        mob.move_to(counter_position)
+
+    counter.add_updater(update_counter)
+    animations = [clock.animate.set_value(duration)]
+    if moving_objects:
+        shift = UP * (upper_end - upper_start)
+        animations.extend(obj.animate.shift(shift) for obj in moving_objects)
+    scene.play(*animations, run_time=duration, rate_func=linear)
+
+    for molecule in gas:
+        molecule.clear_updaters()
+    for molecule, color, state in zip(gas, original_colors, pulse_states):
+        if state["scale"] != 1.0:
+            molecule.scale(1 / state["scale"])
+        molecule.set_color(color)
+    counter.clear_updaters()
+    return paths[-1], final_velocities, int(totals[-1])
+
+
+class Chapter6(ThreeDScene):
+    """Bölüm 6 — Gay-Lussac yasası: hacim ve mol sayısı sabit."""
+
+    def construct(self):
+        self.camera.background_color = BLACK
+        self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
+
+        title = _text("GAY-LUSSAC YASASI", 34, BLUE_A).to_edge(UP, buff=0.3)
+        condition = _text("Hacim V ve mol sayısı n sabit", 20, GREY_A).next_to(
+            title, DOWN, buff=0.1
+        )
+        self.add_fixed_in_frame_mobjects(title, condition)
+        self.play(FadeIn(title), FadeIn(condition), run_time=0.8)
+
+        center_x, radius = -2.15, 0.96
+        lower, upper = -1.55, 1.15
+        vessel = _gas_vessel(center_x, radius, lower, upper)
+        piston = _gas_piston(center_x, radius, upper)
+        positions = _gas_positions(30, center_x, radius, lower, upper, 606)
+        colors = [ORANGE if i == 0 else BLUE_C for i in range(len(positions))]
+        gas = _gas_particles(positions, colors)
+        self.play(Create(vessel), FadeIn(piston), FadeIn(gas), run_time=1.2)
+
+        heater = VGroup(
+            RoundedRectangle(
+                width=1.65,
+                height=0.42,
+                corner_radius=0.08,
+                fill_color=ORANGE,
+                fill_opacity=0.85,
+                stroke_color=YELLOW,
+            ).move_to([center_x, -2.05, 0]),
+            _text("ISITICI", 16, BLACK).move_to([center_x, -2.05, 0]),
+        )
+        heater_arrows = VGroup(
+            *[
+                Arrow(
+                    [center_x + offset, -1.78, 0],
+                    [center_x + offset, -1.48, 0],
+                    buff=0,
+                    color=ORANGE,
+                    stroke_width=3,
+                    max_tip_length_to_length_ratio=0.3,
+                )
+                for offset in (-0.45, 0, 0.45)
+            ]
+        )
+        phase = _text("ÖNCE — 3 s ölçüm", 18, GREEN_A).move_to([-5.25, 2.15, 0])
+        counter_heading = _text("Piston çarpması", 18, WHITE).move_to(
+            [-5.25, 1.55, 0]
+        )
+        counter = _text("0", 34, YELLOW).move_to([-5.25, 0.95, 0])
+        counter_note = _text("Aynı süre", 15, GREY_A).next_to(counter, DOWN, buff=0.08)
+        formula = _text("P / T = sabit", 30, YELLOW).move_to([3.35, 1.25, 0])
+        explanation = _text(
+            "V ve n sabit\nT (Kelvin) artar → P artar",
+            20,
+            WHITE,
+        ).move_to([3.35, 0.25, 0])
+        temperature = _text("T: 300 K", 20, ORANGE).move_to([3.35, -0.75, 0])
+        self.add_fixed_in_frame_mobjects(
+            phase, counter_heading, counter, counter_note, formula, explanation, temperature
+        )
+        self.play(
+            FadeIn(phase),
+            FadeIn(counter_heading),
+            FadeIn(counter),
+            FadeIn(counter_note),
+            FadeIn(formula),
+            FadeIn(explanation),
+            FadeIn(temperature),
+            run_time=0.7,
+        )
+
+        observation_time = 3.0
+        inner_radius, inner_lower, inner_upper = radius - 0.15, lower + 0.15, upper - 0.15
+        positions, velocities, before_hits = _play_gas_measurement(
+            self,
+            gas,
+            positions,
+            None,
+            duration=observation_time,
+            radius=inner_radius,
+            lower=inner_lower,
+            upper_start=inner_upper,
+            upper_end=inner_upper,
+            center_x=center_x,
+            counter=counter,
+            seed=606,
+        )
+
+        self.remove_fixed_in_frame_mobjects(title, condition)
+        self.remove(title, condition)
+        card, correct = _prediction_prompt(
+            self,
+            "Hacim sabitken gazı ısıtırsam basınç ne olur?",
+            "ARTAR",
+            choice_buff=0.4,
+            labeled_choices=True,
+        )
+        hot_temperature = 450
+        correct.set_color(GREEN)
+        self.play(Indicate(correct, color=GREEN, scale_factor=1.12), run_time=0.8)
+        self.remove_fixed_in_frame_mobjects(card)
+        self.remove(card)
+
+        self.play(
+            FadeOut(phase),
+            FadeOut(counter_heading),
+            FadeOut(counter),
+            FadeOut(counter_note),
+            FadeOut(formula),
+            FadeOut(explanation),
+            FadeOut(temperature),
+            run_time=0.5,
+        )
+        self.remove_fixed_in_frame_mobjects(
+            phase,
+            counter_heading,
+            counter,
+            counter_note,
+            formula,
+            explanation,
+            temperature,
+        )
+        self.remove(
+            phase,
+            counter_heading,
+            counter,
+            counter_note,
+            formula,
+            explanation,
+            temperature,
+        )
+
+        mola = gas[0]
+        mola_start = positions[0].copy()
+        hot_velocity = velocities[0] * np.sqrt(hot_temperature / 300)
+        closeup_duration = 2.4
+        closeup_paths, _, closeup_events, _, _ = _simulate_gas_paths(
+            mola_start.reshape(1, 3),
+            closeup_duration,
+            inner_radius,
+            inner_lower,
+            inner_upper,
+            seed=612,
+            center_x=center_x,
+            initial_velocities=hot_velocity.reshape(1, 3),
+            samples_per_second=60,
+            substeps=4,
+        )
+        closeup_path = closeup_paths[:, 0, :]
+        closeup_hits = closeup_events[0]
+        closeup_clock = ValueTracker(0)
+        closeup_state = {"scale": 1.0, "active": False}
+        original_mola_color = colors[0]
+
+        def animate_closeup_mola(mob, _dt=0):
+            now = closeup_clock.get_value()
+            hit_index = np.searchsorted(closeup_hits, now, side="right") - 1
+            age = now - closeup_hits[hit_index] if hit_index >= 0 else closeup_duration
+            active = age < 0.05
+            pulse = np.sin(np.pi * age / 0.05) if active else 0.0
+            scale = 1 + 0.7 * pulse
+            mob.scale(scale / closeup_state["scale"])
+            closeup_state["scale"] = scale
+            if active != closeup_state["active"]:
+                mob.set_color(RED if active else original_mola_color)
+                closeup_state["active"] = active
+            mob.move_to(_sample_path(closeup_path, now, samples_per_second=60))
+
+        mola.add_updater(animate_closeup_mola)
+        dim_others = [molecule.animate.set_opacity(0.12) for molecule in gas[1:]]
+        self.play(*dim_others, run_time=1.1)
+        self.move_camera(zoom=2.2, frame_center=mola_start, run_time=1.1)
+        heat_caption = _text("ISI GAZA AKTARILIYOR", 22, ORANGE).to_corner(
+            UL, buff=0.35
+        )
+        energy_label = _text("Mola'nın kinetik enerjisi", 17, WHITE).move_to(
+            [3.8, 1.0, 0]
+        )
+        energy_before = _text("300 K", 17, BLUE_A).move_to([3.8, 0.58, 0])
+        energy_after = _text("450 K", 17, ORANGE).move_to([3.8, -0.55, 0])
+        energy_outline = RoundedRectangle(
+            width=2.1,
+            height=0.34,
+            corner_radius=0.08,
+            stroke_color=WHITE,
+            stroke_width=1.5,
+            fill_opacity=0,
+        ).move_to([3.8, 0, 0])
+        energy_fill = Rectangle(
+            width=0.68,
+            height=0.23,
+            stroke_width=0,
+            fill_color=BLUE_C,
+            fill_opacity=0.95,
+        ).move_to([3.18, 0, 0])
+        heat_note = _text(
+            "Isıtıcıdan alınan enerji\nortalama kinetik enerjiyi artırır.",
+            17,
+            WHITE,
+        ).move_to([3.8, -1.15, 0])
+        self.add_fixed_in_frame_mobjects(
+            heat_caption,
+            energy_label,
+            energy_before,
+            energy_after,
+            energy_outline,
+            energy_fill,
+            heat_note,
+        )
+        self.play(
+            FadeIn(heat_caption),
+            FadeIn(energy_label),
+            FadeIn(energy_before),
+            FadeIn(energy_after),
+            Create(energy_outline),
+            FadeIn(energy_fill),
+            FadeIn(heat_note),
+            FadeIn(heater),
+            FadeIn(heater_arrows),
+            run_time=0.7,
+        )
+
+        start = mola.get_center()
+        incoming_heat = VGroup(
+            *[
+                Dot(point=start + DOWN * (0.75 + index * 0.16), radius=0.09, color=ORANGE)
+                for index in range(4)
+            ]
+        )
+        self.add(incoming_heat)
+        self.play(
+            *[
+                packet.animate.move_to(start + DOWN * 0.12)
+                for packet in incoming_heat
+            ],
+            energy_fill.animate.set_color(ORANGE).stretch_to_fit_width(1.38).move_to(
+                [3.45, 0, 0]
+            ),
+            run_time=1.0,
+            rate_func=linear,
+        )
+        self.play(FadeOut(incoming_heat), run_time=0.2)
+        speed_before = Arrow(
+            start,
+            start + velocities[0] / np.linalg.norm(velocities[0]) * 0.42,
+            buff=0,
+            color=BLUE_A,
+            stroke_width=5,
+            max_tip_length_to_length_ratio=0.35,
+        )
+        speed_after = Arrow(
+            start,
+            start + hot_velocity / np.linalg.norm(hot_velocity) * 1.05,
+            buff=0,
+            color=ORANGE,
+            stroke_width=6,
+            max_tip_length_to_length_ratio=0.25,
+        )
+        speed_note = _text("Hız vektörü uzar", 16, ORANGE).move_to(
+            [3.8, -1.72, 0]
+        )
+        self.add(speed_before)
+        self.add_fixed_in_frame_mobjects(speed_note)
+        self.play(
+            Transform(speed_before, speed_after),
+            FadeIn(speed_note),
+            run_time=0.7,
+        )
+        self.play(closeup_clock.animate.set_value(closeup_duration), run_time=closeup_duration, rate_func=linear)
+        mola.clear_updaters()
+        if closeup_state["scale"] != 1.0:
+            mola.scale(1 / closeup_state["scale"])
+        mola.set_color(original_mola_color)
+        mola.move_to(mola_start)
+
+        self.play(
+            FadeOut(speed_before),
+            FadeOut(heater),
+            FadeOut(heater_arrows),
+            FadeOut(heat_caption),
+            FadeOut(energy_label),
+            FadeOut(energy_before),
+            FadeOut(energy_after),
+            FadeOut(energy_outline),
+            FadeOut(energy_fill),
+            FadeOut(heat_note),
+            FadeOut(speed_note),
+            *[molecule.animate.set_opacity(1) for molecule in gas[1:]],
+            run_time=1.1,
+        )
+        self.move_camera(zoom=1.0, frame_center=ORIGIN, run_time=1.1)
+        self.remove_fixed_in_frame_mobjects(
+            heat_caption,
+            energy_label,
+            energy_before,
+            energy_after,
+            energy_outline,
+            energy_fill,
+            heat_note,
+            speed_note,
+        )
+        self.remove(
+            heat_caption,
+            energy_label,
+            energy_before,
+            energy_after,
+            energy_outline,
+            energy_fill,
+            heat_note,
+            speed_note,
+        )
+
+        hot_label = _text(f"T: {hot_temperature} K", 20, ORANGE).move_to(
+            temperature.get_center()
+        )
+        self.add_fixed_in_frame_mobjects(hot_label)
+        self.play(FadeIn(phase), FadeIn(counter_heading), FadeIn(counter), FadeIn(counter_note), FadeIn(formula), FadeIn(explanation), FadeIn(hot_label), run_time=0.5)
+        self.play(
+            *[molecule.animate.set_color(ORANGE) for molecule in gas],
+            run_time=0.45,
+        )
+        phase.become(
+            _text("SONRA — 3 s ölçüm", 18, ORANGE).move_to(phase.get_center())
+        )
+
+        positions, velocities, after_hits = _play_gas_measurement(
+            self,
+            gas,
+            positions,
+            velocities * np.sqrt(hot_temperature / 300),
+            duration=observation_time,
+            radius=inner_radius,
+            lower=inner_lower,
+            upper_start=inner_upper,
+            upper_end=inner_upper,
+            center_x=center_x,
+            counter=counter,
+            seed=607,
+        )
+        result = _text(
+            f"Aynı sürede piston çarpması: {before_hits} → {after_hits}. "
+            "Moleküller daha hızlı ve daha sert çarpar.",
+            18,
+            WHITE,
+        )
+        _close_prediction(self, card, correct, result)
+        self.add_fixed_in_frame_mobjects(title, condition)
+        self.play(FadeIn(title), FadeIn(condition), run_time=0.5)
+        summary = _text("V ve n sabit  →  T artarsa P artar", 23, YELLOW).to_edge(
+            DOWN, buff=0.55
+        )
+        self.add_fixed_in_frame_mobjects(summary)
+        self.play(FadeIn(summary), run_time=0.6)
+        self.wait(3)
+
+
+class Chapter7(ThreeDScene):
+    """Bölüm 7 — Charles yasası: basınç ve mol sayısı sabit."""
+
+    def construct(self):
+        self.camera.background_color = BLACK
+        self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
+
+        title = _text("CHARLES YASASI", 34, BLUE_A).to_edge(UP, buff=0.3)
+        condition = _text("Basınç P ve mol sayısı n sabit", 20, GREY_A).next_to(
+            title, DOWN, buff=0.1
+        )
+        self.add_fixed_in_frame_mobjects(title, condition)
+        self.play(FadeIn(title), FadeIn(condition), run_time=0.8)
+
+        center_x, radius = -2.15, 0.96
+        lower, upper_start, upper_end = -1.55, -0.15, 0.4
+        vessel = _gas_vessel(
+            center_x, radius, lower, upper_start, visual_top=0.8
+        )
+        piston = _gas_piston(center_x, radius, upper_start)
+        weight = Cube(
+            side_length=0.48,
+            fill_color=GREY_B,
+            fill_opacity=0.95,
+            stroke_color=WHITE,
+        ).move_to([center_x, upper_start + 0.42, 0])
+        positions = _gas_positions(30, center_x, radius, lower, upper_start, 707)
+        colors = [ORANGE if i == 0 else BLUE_C for i in range(len(positions))]
+        gas = _gas_particles(positions, colors)
+        self.play(
+            Create(vessel),
+            FadeIn(piston),
+            FadeIn(weight),
+            FadeIn(gas),
+            run_time=1.2,
+        )
+
+        phase = _text("ÖNCE — 3 s ölçüm", 18, GREEN_A).move_to([-5.25, 2.15, 0])
+        counter_heading = _text("Piston çarpması", 18, WHITE).move_to(
+            [-5.25, 1.55, 0]
+        )
+        counter = _text("0", 34, YELLOW).move_to([-5.25, 0.95, 0])
+        counter_note = _text("Aynı süre", 15, GREY_A).next_to(counter, DOWN, buff=0.08)
+        formula = _text("V / T = sabit", 30, YELLOW).move_to([3.35, 1.25, 0])
+        weight_note = _text(
+            "Üstteki ağırlık hep aynı,\nbu yüzden içerideki basınç da aynı kalıyor.",
+            18,
+            WHITE,
+        ).move_to([3.35, 0.2, 0])
+        temperature = _text("T: 400 K", 20, ORANGE).move_to([3.35, -0.85, 0])
+        self.add_fixed_in_frame_mobjects(
+            phase, counter_heading, counter, counter_note, formula, weight_note, temperature
+        )
+        self.play(
+            FadeIn(phase),
+            FadeIn(counter_heading),
+            FadeIn(counter),
+            FadeIn(counter_note),
+            FadeIn(formula),
+            FadeIn(weight_note),
+            FadeIn(temperature),
+            run_time=0.7,
+        )
+
+        observation_time = 3.0
+        inner_radius, inner_lower = radius - 0.15, lower + 0.15
+        current_upper = upper_start - 0.15
+        positions, velocities, before_hits = _play_gas_measurement(
+            self,
+            gas,
+            positions,
+            None,
+            duration=observation_time,
+            radius=inner_radius,
+            lower=inner_lower,
+            upper_start=current_upper,
+            upper_end=current_upper,
+            center_x=center_x,
+            counter=counter,
+            seed=707,
+        )
+
+        self.remove_fixed_in_frame_mobjects(title, condition)
+        self.remove(title, condition)
+        card, correct = _prediction_prompt(
+            self,
+            "Aynı ağırlık altındaki gazı ısıtırsam piston ne yapar?",
+            "ARTAR",
+            choice_buff=0.4,
+            labeled_choices=True,
+        )
+        hot_temperature = 600
+        hot_label = _text(f"T: {hot_temperature} K", 20, ORANGE).move_to(
+            temperature.get_center()
+        )
+        self.add_fixed_in_frame_mobjects(hot_label)
+        self.remove_fixed_in_frame_mobjects(temperature)
+        self.remove(temperature)
+        counter_note.become(
+            _text("Isıtma sırasında", 15, GREY_A).move_to(counter_note.get_center())
+        )
+        self.play(
+            *[molecule.animate.set_color(ORANGE) for molecule in gas],
+            run_time=0.45,
+        )
+        phase.become(
+            _text("PİSTON YÜKSELİYOR", 18, ORANGE).move_to(phase.get_center())
+        )
+
+        positions, velocities, _ = _play_gas_measurement(
+            self,
+            gas,
+            positions,
+            velocities * np.sqrt(hot_temperature / 400),
+            duration=4.0,
+            radius=inner_radius,
+            lower=inner_lower,
+            upper_start=current_upper,
+            upper_end=upper_end - 0.15,
+            center_x=center_x,
+            counter=counter,
+            moving_objects=[piston, weight],
+            seed=708,
+        )
+        phase.become(_text("SONRA — V arttı", 18, GREEN_A).move_to(phase.get_center()))
+        volume_note = _text("Piston yükselir → V artar", 19, GREEN_A).move_to(
+            [3.35, -1.45, 0]
+        )
+        self.add_fixed_in_frame_mobjects(volume_note)
+        self.play(FadeIn(volume_note), run_time=0.5)
+        result = _text(
+            "Ağırlık aynı kaldı: basınç sabit. "
+            "Gaz ısınınca piston yükseldi.",
+            18,
+            WHITE,
+        )
+        _close_prediction(self, card, correct, result)
+        self.add_fixed_in_frame_mobjects(title, condition)
+        self.play(FadeIn(title), FadeIn(condition), run_time=0.5)
+        summary = _text("P ve n sabit  →  T artarsa V artar", 23, YELLOW).to_edge(
+            DOWN, buff=0.55
+        )
+        self.add_fixed_in_frame_mobjects(summary)
+        self.play(FadeIn(summary), run_time=0.6)
+        self.wait(3)
+
+
+class Chapter8(ThreeDScene):
+    """Bölüm 8 — sıcaklık ve hacim sabitken mol sayısının etkisi."""
+
+    def construct(self):
+        self.camera.background_color = BLACK
+        self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
+
+        title = _text("MADDE MİKTARI VE BASINÇ", 34, BLUE_A).to_edge(
+            UP, buff=0.3
+        )
+        condition = _text("Sıcaklık T ve hacim V sabit", 20, GREY_A).next_to(
+            title, DOWN, buff=0.1
+        )
+        self.add_fixed_in_frame_mobjects(title, condition)
+        self.play(FadeIn(title), FadeIn(condition), run_time=0.8)
+
+        center_x, radius = -2.15, 0.96
+        lower, upper = -1.55, 1.15
+        vessel = _gas_vessel(center_x, radius, lower, upper)
+        piston = _gas_piston(center_x, radius, upper)
+        initial_count = 18
+        positions = _gas_positions(
+            initial_count, center_x, radius, lower, upper, 808
+        )
+        colors = [ORANGE if i == 0 else BLUE_C for i in range(initial_count)]
+        gas = _gas_particles(positions, colors)
+        self.play(Create(vessel), FadeIn(piston), FadeIn(gas), run_time=1.2)
+
+        phase = _text("ÖNCE — 3 s ölçüm", 18, GREEN_A).move_to([-5.25, 2.15, 0])
+        counter_heading = _text("Piston çarpması", 18, WHITE).move_to(
+            [-5.25, 1.55, 0]
+        )
+        counter = _text("0", 34, YELLOW).move_to([-5.25, 0.95, 0])
+        counter_note = _text("Aynı süre", 15, GREY_A).next_to(counter, DOWN, buff=0.08)
+        formula = MathTex(r"N = n \times N_A", font_size=34, color=YELLOW).move_to(
+            [3.35, 1.35, 0]
+        )
+        symbol_definitions = _text(
+            "N: toplam tanecik sayısı\nn: madde miktarı (mol)",
+            15,
+            WHITE,
+        ).move_to([3.35, 0.55, 0])
+        avogadro = MathTex(
+            r"N_A = 6{,}022 \times 10^{23}\ \mathrm{mol}^{-1}",
+            font_size=23,
+            color=WHITE,
+        ).move_to([3.35, -0.15, 0])
+        avogadro_note = _text(
+            "Avogadro sabiti: 1 moldaki tanecik sayısı",
+            14,
+            GREY_A,
+        ).move_to([3.35, -0.62, 0])
+        relation = _text("T ve V sabit → n artarsa P artar", 18, GREEN_A).move_to(
+            [3.35, -1.1, 0]
+        )
+        model_note = _text(
+            "Her nokta çok sayıda molekülü temsil eder.",
+            16,
+            GREY_A,
+        ).move_to([3.35, -1.55, 0])
+        self.add_fixed_in_frame_mobjects(
+            phase,
+            counter_heading,
+            counter,
+            counter_note,
+            formula,
+            symbol_definitions,
+            avogadro,
+            avogadro_note,
+            relation,
+            model_note,
+        )
+        self.play(
+            FadeIn(phase),
+            FadeIn(counter_heading),
+            FadeIn(counter),
+            FadeIn(counter_note),
+            FadeIn(formula),
+            FadeIn(symbol_definitions),
+            FadeIn(avogadro),
+            FadeIn(avogadro_note),
+            FadeIn(relation),
+            FadeIn(model_note),
+            run_time=0.7,
+        )
+
+        observation_time = 3.0
+        inner_radius, inner_lower, inner_upper = radius - 0.15, lower + 0.15, upper - 0.15
+        positions, velocities, before_hits = _play_gas_measurement(
+            self,
+            gas,
+            positions,
+            None,
+            duration=observation_time,
+            radius=inner_radius,
+            lower=inner_lower,
+            upper_start=inner_upper,
+            upper_end=inner_upper,
+            center_x=center_x,
+            counter=counter,
+            seed=808,
+        )
+
+        self.remove_fixed_in_frame_mobjects(title, condition)
+        self.remove(title, condition)
+        card, correct = _prediction_prompt(
+            self,
+            "T ve V sabitken kaba daha fazla gaz eklersem basınç ne olur?",
+            "ARTAR",
+            choice_buff=0.4,
+            labeled_choices=True,
+        )
+        added_count = 18
+        added_positions = _gas_positions(
+            added_count, center_x, radius, lower, upper, 809
+        )
+        added_colors = [GREEN_C] * added_count
+        added_gas = _gas_particles(added_positions, added_colors, radius=0.06)
+        valve = Circle(radius=0.16, color=GREEN_A, stroke_width=3).move_to(
+            [center_x + 0.7, 1.65, 0]
+        )
+        valve_label = _text("VANA AÇIK", 15, GREEN_A).next_to(valve, UP, buff=0.12)
+        self.add_fixed_in_frame_mobjects(valve, valve_label)
+        self.add(added_gas)
+        for molecule in added_gas:
+            molecule.move_to(valve.get_center())
+        self.play(
+            FadeIn(valve_label),
+            *[
+                molecule.animate.move_to(target)
+                for molecule, target in zip(added_gas, added_positions)
+            ],
+            run_time=1.3,
+            rate_func=smooth,
+        )
+        gas.add(*added_gas)
+        self.remove(added_gas)
+        positions = np.vstack((positions, added_positions))
+        rng = np.random.default_rng(809)
+        added_velocities = rng.normal(size=(added_count, 3))
+        added_velocities[:, 2] = 0
+        added_velocities /= np.linalg.norm(
+            added_velocities, axis=1, keepdims=True
+        )
+        added_velocities *= rng.uniform(0.9, 1.45, size=(added_count, 1))
+        velocities = np.vstack((velocities, added_velocities))
+        self.play(FadeOut(valve_label), run_time=0.3)
+        phase.become(
+            _text("SONRA — 3 s ölçüm", 18, GREEN_A).move_to(phase.get_center())
+        )
+
+        positions, velocities, after_hits = _play_gas_measurement(
+            self,
+            gas,
+            positions,
+            velocities,
+            duration=observation_time,
+            radius=inner_radius,
+            lower=inner_lower,
+            upper_start=inner_upper,
+            upper_end=inner_upper,
+            center_x=center_x,
+            counter=counter,
+            seed=810,
+        )
+        self.remove_fixed_in_frame_mobjects(valve, valve_label)
+        self.play(FadeOut(valve), run_time=0.35)
+        result = _text(
+            f"Aynı sürede çarpma sayısı: {before_hits} → {after_hits}. "
+            "Molekül sayısı artınca basınç yükselir.",
+            18,
+            WHITE,
+        )
+        _close_prediction(self, card, correct, result)
+        self.add_fixed_in_frame_mobjects(title, condition)
+        self.play(FadeIn(title), FadeIn(condition), run_time=0.5)
+        summary = _text("T ve V sabit  →  n artarsa P artar", 23, YELLOW).to_edge(
+            DOWN, buff=0.55
+        )
+        self.add_fixed_in_frame_mobjects(summary)
+        self.play(FadeIn(summary), run_time=0.6)
+        self.wait(3)
