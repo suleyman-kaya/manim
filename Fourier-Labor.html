@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fourier-Labor</title>
+<style>
+:root{--bg:#f3f5ff;--card:#fff;--text:#12183a;--muted:#59638f;--line:#d6dcf4;--c1:#0a9d9a;--c2:#7a3fe0;--c3:#b88700;--c4:#d6336c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1026;--card:#151c3f;--text:#f2f5ff;--muted:#9aa5cf;--line:#2a3366;--c1:#22e5e0;--c2:#a66bff;--c3:#ffd23f;--c4:#ff5c8a}}
+:root[data-theme="dark"]{--bg:#0b1026;--card:#151c3f;--text:#f2f5ff;--muted:#9aa5cf;--line:#2a3366;--c1:#22e5e0;--c2:#a66bff;--c3:#ffd23f;--c4:#ff5c8a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Calibri,"Segoe UI",Arial,sans-serif;line-height:1.45}
+main{max-width:980px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:2rem;margin:.2em 0 .1em}
+h2{font-size:1.3rem;margin:0 0 .2em}
+.lead,.hint{color:var(--muted);margin:.2em 0 1em}
+.hint{font-size:.9rem;margin:.6em 0 0}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:18px 0}
+canvas{width:100%;display:block;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:12px 0 0}
+label{display:flex;align-items:center;gap:8px;font-size:.95rem}
+input[type=range]{accent-color:var(--c2);width:150px}
+button,select{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 12px;cursor:pointer}
+button.on{border-color:var(--c1);color:var(--c1);font-weight:700}
+textarea{width:100%;box-sizing:border-box;font:.85rem Consolas,monospace;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media (max-width:640px){.grid{grid-template-columns:1fr}}
+.val{font-variant-numeric:tabular-nums;min-width:2.2em;color:var(--c1);font-weight:700}
+</style>
+</head>
+<body>
+<main>
+<h1>Fourier-Labor</h1>
+<p class="lead">Zwei Live-Experimente: Zeichne zuerst eine Form mit rotierenden Kreisen und verfolge dann Schritt für Schritt den Übergang vom Zeitbereich in den Frequenzbereich.</p>
+
+<section>
+<h2>1 · Zeichnen mit rotierenden Kreisen (Epizykel)</h2>
+<p class="lead" style="margin:0">Jeder Punkt der Form ist die Summe miteinander verbundener, rotierender Kreise. Je mehr Kreise du verwendest, desto schärfer wird die Zeichnung.</p>
+<canvas id="c1"></canvas>
+<div class="row">
+<label>Form
+<select id="shape"><option value="heart">Herz</option><option value="star">Stern</option><option value="inf">Unendlich</option><option value="tea">Türkisches Teeglas</option><option value="reader">Lesende Person</option><option value="draw">Selbst zeichnen</option></select></label>
+<label>Anzahl Kreise <input id="nc" type="range" min="1" max="80" value="15"><span class="val" id="ncv">15</span></label>
+<label><input id="showc" type="checkbox" checked> Kreise anzeigen</label>
+<button id="redo">Neu starten</button>
+</div>
+<p class="hint" id="drawhint">Wähle „Selbst zeichnen“ und zeichne mit Maus oder Finger eine geschlossene Form; sobald du loslässt, beginnen die Kreise, sie nachzuzeichnen.</p>
+<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--muted)">Eigenen SVG-Pfad einfügen</summary>
+<textarea id="svgd" rows="3" placeholder="z. B.: M 10 80 C 40 10, 65 10, 95 80 S 150 150, 180 80"></textarea>
+<div class="row"><button id="svgbtn">Diesen SVG-Pfad zeichnen</button><span class="hint" id="svgmsg" style="margin:0"></span></div></details>
+</section>
+
+<section>
+<h2>2 · Vom Zeitbereich in den Frequenzbereich</h2>
+<p class="lead" style="margin:0">Wir wickeln das Signal mit unterschiedlicher Geschwindigkeit um den Kreis. Entfernt sich der Schwerpunkt vom Nullpunkt, ist diese Frequenz im Signal enthalten; das Diagramm rechts zeigt den Abstand dieses Schwerpunkts.</p>
+<canvas id="ct"></canvas>
+<div class="grid"><canvas id="cw"></canvas><canvas id="cs"></canvas></div>
+<div class="row">
+<button id="play" class="on">Pause</button>
+<label>Durchlauf <input id="fs" type="range" min="0" max="8" step="0.01" value="0"><span class="val" id="fsv">0.00</span> Hz</label>
+</div>
+<div class="row">
+<label>1. Frequenz <input id="f1" type="range" min="1" max="7" step="0.5" value="2"><span class="val" id="f1v">2</span></label>
+<label>2. Frequenz <input id="f2" type="range" min="1" max="7" step="0.5" value="5"><span class="val" id="f2v">5</span></label>
+</div>
+<p class="hint">Stimmt die Wickelfrequenz mit einer Frequenz im Signal überein, häuft sich die Form auf einer Seite und im Spektrum entsteht ein Peak.</p>
+</section>
+</main>
+<script>
+const TAU=Math.PI*2, $=id=>document.getElementById(id);
+const col=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function fit(cv,ratio){const d=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth||300,h=w*ratio;
+ if(cv.width!==Math.round(w*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);cv.style.height=h+'px';}
+ const g=cv.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w,h};}
+
+const TEA="M210,216 L402,216 L385,240 C367,262 366,290 368,310 C372,340 393,370 393,400 C393,430 370,455 350,468 L372,452 A145,28 0 1 1 240,452 L262,468 L350,468 L262,468 C240,455 218,430 218,400 C218,370 245,340 245,310 C246,290 245,262 228,240 L210,216 L335,216 C318,195 345,160 335,108 C345,160 318,195 335,216 L358,216 C342,195 372,170 360,128 C372,170 342,195 358,216 L210,216",READER="M463.29,305.295v-84.777h-9.38c-39.71,0-75.128,6.873-104.271,15.713c-3.467-7.023-7.264-14.182-10.956-20.92c1.59-1.441,3.166-2.919,4.682-4.435c22.331-22.316,36.183-53.253,36.168-87.343c0.016-34.089-13.837-65.026-36.168-87.336C321.035,13.837,290.089,0,256.007,0c-34.082,0-65.027,13.837-87.343,36.198c-22.331,22.309-36.182,53.246-36.182,87.336c0,34.09,13.851,65.027,36.182,87.343c1.516,1.516,3.076,3.017,4.682,4.435c-3.706,6.738-7.503,13.897-10.97,20.92c-29.159-8.84-64.547-15.713-104.257-15.713h-9.38v84.777c-28.318,0.526-39.154,23.877-39.154,52.631c0,28.754,10.836,52.106,39.154,52.631v67.481l9.035,0.315h0.255c2.836,0.098,28.634,1.208,63.586,5.89c34.938,4.667,79.044,12.958,118.244,27.193l1.545,0.563h29.22l1.545-0.563c40.445-14.692,86.158-23.044,121.59-27.629c17.739-2.288,32.896-3.661,43.611-4.456c5.358-0.398,9.604-0.646,12.501-0.811c1.441-0.068,2.536-0.128,3.286-0.15c0.36-0.023,0.646-0.038,0.811-0.038h0.27l9.049-0.315v-67.481c28.319-0.548,39.124-23.877,39.124-52.631C502.414,329.172,491.609,305.836,463.29,305.295z";
+/* ---------- Demo 1: epicycle ---------- */
+let target=[],coef=[],ks=[],trail=[],lastT=0,t0=performance.now(),drawing=false,drawPts=[],mode='heart';
+for(let j=0;j<=100;j++){ks.push(j===0?0:(j%2?(j+1)/2:-j/2));}
+function resample(p,N){const m=p.length;const L=[0];for(let i=1;i<=m;i++){const a=p[i-1],b=p[i%m];L.push(L[i-1]+Math.hypot(b[0]-a[0],b[1]-a[1]));}
+ const tot=L[m],out=[];let j=1;for(let i=0;i<N;i++){const d=tot*i/N;while(j<m&&L[j]<d)j++;const a=p[j-1],b=p[j%m],u=(d-L[j-1])/((L[j]-L[j-1])||1);out.push([a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u]);}return out;}
+function norm(p){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const q of p){x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);y0=Math.min(y0,q[1]);y1=Math.max(y1,q[1]);}
+ const cx=(x0+x1)/2,cy=(y0+y1)/2,s=2/Math.max(x1-x0,y1-y0,1e-9);return p.map(q=>[(q[0]-cx)*s,(q[1]-cy)*s]);}
+function setShape(pts){const N=256;target=norm(resample(pts,N));coef=ks.map(k=>{let re=0,im=0;for(let n=0;n<N;n++){const a=-TAU*k*n/N,c=Math.cos(a),s=Math.sin(a);re+=target[n][0]*c-target[n][1]*s;im+=target[n][0]*s+target[n][1]*c;}return{re:re/N,im:im/N,k};});resetTrail();}
+function resetTrail(){trail=[];t0=performance.now();lastT=0;}
+function preset(name){const P=[];
+ if(name==='tea'||name==='reader'){const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',name==='tea'?TEA:READER);const L=p.getTotalLength();for(let i=0;i<500;i++){const q=p.getPointAtLength(L*i/500);P.push([q.x,q.y]);}return P;}
+ if(name==='heart'){for(let i=0;i<400;i++){const t=TAU*i/400;P.push([16*Math.pow(Math.sin(t),3),-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))]);}}
+ else if(name==='star'){const V=[];for(let i=0;i<10;i++){const r=i%2?0.42:1,a=-Math.PI/2+i*Math.PI/5;V.push([r*Math.cos(a),r*Math.sin(a)]);}
+  for(let i=0;i<10;i++){const a=V[i],b=V[(i+1)%10];for(let j=0;j<30;j++)P.push([a[0]+(b[0]-a[0])*j/30,a[1]+(b[1]-a[1])*j/30]);}}
+ else{for(let i=0;i<400;i++){const t=TAU*i/400,d=1+Math.sin(t)*Math.sin(t);P.push([Math.cos(t)/d,Math.sin(t)*Math.cos(t)/d]);}}
+ return P;}
+function frame1(now){const {g,w,h}=fit($('c1'),0.72);g.clearRect(0,0,w,h);
+ const C1=col('--c1'),C2=col('--c2'),C3=col('--c3'),M=col('--muted');
+ if(drawing&&drawPts.length>1){g.strokeStyle=C3;g.lineWidth=3;g.beginPath();drawPts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();return;}
+ if(!coef.length)return;
+ const S=Math.min(w,h)*0.43,cx=w/2,cy=h/2,nc=+$('nc').value;
+ g.globalAlpha=0.22;g.strokeStyle=M;g.lineWidth=1.5;g.beginPath();target.forEach((p,i)=>{const x=cx+p[0]*S,y=cy+p[1]*S;i?g.lineTo(x,y):g.moveTo(x,y);});g.closePath();g.stroke();g.globalAlpha=1;
+ const t=((now-t0)/10000)%1;if(t<lastT)trail=[];lastT=t;
+ let x=0,y=0;const show=$('showc').checked;
+ for(let j=0;j<nc&&j<coef.length;j++){const c=coef[j],a=TAU*c.k*t,ca=Math.cos(a),sa=Math.sin(a);
+  const vx=c.re*ca-c.im*sa,vy=c.re*sa+c.im*ca,r=Math.hypot(c.re,c.im)*S;
+  if(show&&r>0.6){g.strokeStyle=C2;g.globalAlpha=0.45;g.lineWidth=1;g.beginPath();g.arc(cx+x*S,cy+y*S,r,0,TAU);g.stroke();g.globalAlpha=1;
+   g.strokeStyle=C1;g.lineWidth=1.3;g.beginPath();g.moveTo(cx+x*S,cy+y*S);g.lineTo(cx+(x+vx)*S,cy+(y+vy)*S);g.stroke();}
+  x+=vx;y+=vy;}
+ trail.push([cx+x*S,cy+y*S]);
+ g.strokeStyle=C3;g.lineWidth=3;g.lineJoin='round';g.beginPath();trail.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();
+ g.fillStyle=C3;g.beginPath();g.arc(cx+x*S,cy+y*S,4.5,0,TAU);g.fill();}
+$('shape').onchange=e=>{mode=e.target.value;if(mode==='draw'){drawing=false;drawPts=[];$('c1').style.touchAction='none';$('drawhint').style.color=col('--c1');}else{$('c1').style.touchAction='';$('drawhint').style.color='';setShape(preset(mode));}};
+$('nc').oninput=e=>{$('ncv').textContent=e.target.value;resetTrail();};
+$('redo').onclick=resetTrail;$('showc').onchange=()=>{};
+const cv1=$('c1');
+cv1.addEventListener('pointerdown',e=>{if(mode!=='draw')return;drawing=true;drawPts=[];cv1.setPointerCapture(e.pointerId);addPt(e);});
+cv1.addEventListener('pointermove',e=>{if(drawing)addPt(e);});
+cv1.addEventListener('pointerup',()=>{if(!drawing)return;drawing=false;if(drawPts.length>10)setShape(drawPts.slice());});
+function addPt(e){const r=cv1.getBoundingClientRect();drawPts.push([e.clientX-r.left,e.clientY-r.top]);}
+$('svgbtn').onclick=()=>{try{const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',$('svgd').value.trim());const L=p.getTotalLength();if(!(L>0))throw 0;
+ const pts=[];for(let i=0;i<500;i++){const q=p.getPointAtLength(L*i/500);pts.push([q.x,q.y]);}mode='svg';$('shape').value='heart';setShape(pts);$('svgmsg').textContent='Wird gezeichnet …';}catch(e){$('svgmsg').textContent='Gib einen gültigen SVG-Pfad (d-Wert) ein.';}};
+
+/* ---------- Demo 2: zaman -> frekans ---------- */
+const T=4,FMAX=8;let F1=2,F2=5,spec=[],fcur=0,playing=true,lastNow=performance.now();
+const sig=t=>Math.sin(TAU*F1*t)+0.6*Math.sin(TAU*F2*t);
+function calcSpec(){spec=[];const n=800;for(let f=0;f<=FMAX+1e-9;f+=0.04){let re=0,im=0;for(let i=0;i<n;i++){const t=T*i/n,v=sig(t),a=-TAU*f*t;re+=v*Math.cos(a);im+=v*Math.sin(a);}spec.push(Math.hypot(re,im)/n);}}
+function frame2(now){const dt=(now-lastNow)/1000;lastNow=now;if(playing){fcur+=dt*0.7;if(fcur>FMAX)fcur=0;$('fs').value=fcur;}else fcur=+$('fs').value;$('fsv').textContent=fcur.toFixed(2);
+ const C1=col('--c1'),C2=col('--c2'),C3=col('--c3'),C4=col('--c4'),M=col('--muted'),LN=col('--line');
+ // zaman
+ let {g,w,h}=fit($('ct'),0.2);g.clearRect(0,0,w,h);g.strokeStyle=LN;g.beginPath();g.moveTo(0,h/2);g.lineTo(w,h/2);g.stroke();
+ g.strokeStyle=C3;g.lineWidth=2.5;g.beginPath();for(let i=0;i<=400;i++){const t=T*i/400,x=w*i/400,y=h/2-sig(t)*h*0.28;i?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
+ g.fillStyle=M;g.font='12px Calibri,Arial,sans-serif';g.fillText('Zeitbereich: Signal g(t)',8,16);
+ // sarma
+ ({g,w,h}=fit($('cw'),0.85));g.clearRect(0,0,w,h);const R=Math.min(w,h)*0.27,cx=w/2,cy=h/2;
+ g.strokeStyle=LN;g.beginPath();g.moveTo(8,cy);g.lineTo(w-8,cy);g.moveTo(cx,8);g.lineTo(cx,h-8);g.stroke();
+ g.strokeStyle=C3;g.lineWidth=1.8;g.beginPath();let mr=0,mi=0;const n=700;
+ for(let i=0;i<=n;i++){const t=T*i/n,v=sig(t),a=-TAU*fcur*t,zr=v*Math.cos(a),zi=v*Math.sin(a);if(i<n){mr+=zr;mi+=zi;}const x=cx+zr*R,y=cy+zi*R;i?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
+ mr/=n;mi/=n;g.fillStyle=C4;g.beginPath();g.arc(cx+mr*R,cy+mi*R,7,0,TAU);g.fill();
+ g.fillStyle=M;g.font='12px Calibri,Arial,sans-serif';g.fillText('Signal wird mit '+fcur.toFixed(2)+' Hz umwickelt',8,16);g.fillStyle=C4;g.fillText('Schwerpunkt',8,h-10);
+ // spektrum
+ ({g,w,h}=fit($('cs'),0.85));g.clearRect(0,0,w,h);const L=34,B=h-30,Tp=24,W=w-L-12,H=B-Tp,mx=0.6;
+ g.strokeStyle=LN;g.beginPath();g.moveTo(L,Tp);g.lineTo(L,B);g.lineTo(L+W,B);g.stroke();
+ g.fillStyle=M;g.font='12px Calibri,Arial,sans-serif';for(let f=0;f<=FMAX;f++){const x=L+W*f/FMAX;g.fillText(f,x-3,B+16);}g.fillText('Frequenz (Hz)',L+W-72,B+28);g.fillText('Frequenzbereich: |Schwerpunkt|',8,16);
+ const idx=Math.floor(fcur/0.04);g.globalAlpha=0.2;g.strokeStyle=C1;g.lineWidth=2;g.beginPath();spec.forEach((v,i)=>{const x=L+W*i*0.04/FMAX,y=B-Math.min(v/mx,1)*H;i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();g.globalAlpha=1;
+ g.lineWidth=2.8;g.beginPath();for(let i=0;i<=idx&&i<spec.length;i++){const x=L+W*i*0.04/FMAX,y=B-Math.min(spec[i]/mx,1)*H;i?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
+ const mag=Math.hypot(mr,mi),px=L+W*fcur/FMAX,py=B-Math.min(mag/mx,1)*H;g.fillStyle=C4;g.beginPath();g.arc(px,py,6,0,TAU);g.fill();
+ g.strokeStyle=C2;g.setLineDash([4,4]);g.lineWidth=1;g.beginPath();g.moveTo(px,Tp);g.lineTo(px,B);g.stroke();g.setLineDash([]);}
+$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'Pause':'Abspielen';$('play').classList.toggle('on',playing);};
+$('fs').oninput=()=>{playing=false;$('play').textContent='Abspielen';$('play').classList.remove('on');};
+$('f1').oninput=e=>{F1=+e.target.value;$('f1v').textContent=F1;calcSpec();};
+$('f2').oninput=e=>{F2=+e.target.value;$('f2v').textContent=F2;calcSpec();};
+
+setShape(preset('heart'));calcSpec();
+function loop(now){try{frame1(now);frame2(now);}catch(e){}requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
