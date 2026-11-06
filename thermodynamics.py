@@ -1,12 +1,14 @@
-"""Termodinamik yolculuğu — on bir bölüm.
+"""Reise durch die Thermodynamik: elf Kapitel.
 
-Önizleme:
+Vorschau:
     manim -pql thermodynamics.py Chapter1
     manim -pql thermodynamics.py Chapter2
     manim -pql thermodynamics.py Chapter3 Chapter4 Chapter5
     manim -pql thermodynamics.py Chapter6 Chapter7 Chapter8
     manim -pql thermodynamics.py Chapter9 Chapter10a Chapter10b Chapter10c
     manim -pql thermodynamics.py Chapter11
+
+Alle Formeln sind mit MarkupText gesetzt; LaTeX (MiKTeX) wird nicht benötigt.
 """
 
 from __future__ import annotations
@@ -17,98 +19,100 @@ from manim.utils.color import color_to_rgb
 
 
 FONT = "Arial"
+MAX_TEXT_WIDTH = 13.0
 
 
 NARRATION = {
     "chapter_1": [
-        "Gözünle göremediğin bu dünyada, gaz molekülleri sürekli hareket eder.",
-        "Benim adım Mola. Bir gaz molekülüyüm; duvarlara çarpar, yön değiştiririm.",
-        "Sen artık bir moleküldün. Şimdi sistemin tamamına dışarıdan bakalım.",
-        "Basınç, hacim, madde miktarı ve mutlak sıcaklık: gazı anlatan dört değişken.",
+        "In dieser Welt, die du mit bloßem Auge nicht sehen kannst, sind Gasmoleküle ständig in Bewegung.",
+        "Ich heiße Mola. Ich bin ein Gasmolekül; ich stoße gegen Wände und ändere meine Richtung.",
+        "Eben warst du ein Molekül. Jetzt betrachten wir das ganze System von außen.",
+        "Druck, Volumen, Stoffmenge und absolute Temperatur: vier Größen, die ein Gas beschreiben.",
     ],
     "chapter_2": [
-        "Bir molekülün enerjisi, farklı hareket biçimlerinden oluşabilir.",
-        "Bu katkıları topladığımızda molekülün enerjisini; bütün molekülleri topladığımızda iç enerjiyi buluruz.",
-        "İdeal gaz modelinde moleküller arası potansiyel enerjiyi ihmal ederiz.",
-        "Isı, depolanan bir şey değil; sıcaklık farkı nedeniyle sistemler arasında aktarılan enerjidir.",
-        "Enerji sıcak kaptan soğuk kaba aktarılır. Soğuk kabın iç enerjisi artar.",
+        "Die Energie eines Moleküls kann aus verschiedenen Bewegungsformen bestehen.",
+        "Addieren wir diese Beiträge, erhalten wir die Energie eines Moleküls; addieren wir über alle Moleküle, erhalten wir die innere Energie.",
+        "Im Modell des idealen Gases vernachlässigen wir die potenzielle Energie zwischen den Molekülen.",
+        "Wärme ist nichts, was gespeichert wird; sie ist Energie, die wegen eines Temperaturunterschieds zwischen Systemen übertragen wird.",
+        "Energie fließt vom heißen zum kalten Gefäß. Die innere Energie des kalten Gefäßes nimmt zu.",
     ],
     "chapter_3": [
-        "Gazdaki moleküllerin hızları birbirinden farklıdır; sıcaklık tek bir molekülün hızını göstermez.",
-        "Sıcaklık, moleküllerin ortalama öteleme kinetik enerjisiyle ilişkilidir.",
-        "İki kap aynı sıcaklıkta olabilir; daha çok molekül içeren kapta toplam iç enerji daha büyüktür.",
+        "Die Moleküle eines Gases sind unterschiedlich schnell; die Temperatur gibt nicht die Geschwindigkeit eines einzelnen Moleküls an.",
+        "Die Temperatur hängt mit der mittleren kinetischen Energie der Translationsbewegung der Moleküle zusammen.",
+        "Beim Erwärmen wird die Verteilung breiter und flacher, und der Mittelwert wandert zu höheren Energien.",
+        "Zwei Gefäße können dieselbe Temperatur haben; im Gefäß mit mehr Molekülen ist die gesamte innere Energie größer.",
     ],
     "chapter_4": [
-        "Mola duvara çarptığında momentumu değişir; duvar da bir itme alır.",
-        "Çarpışmaların duvara aktardığı momentum, kuvveti; kuvvetin yüzeye dağılımı basıncı oluşturur.",
+        "Wenn Mola gegen die Wand stößt, ändert sich sein Impuls; auch die Wand erhält einen Kraftstoß.",
+        "Der Impuls, den die Stöße auf die Wand übertragen, erzeugt eine Kraft; die Kraft verteilt auf die Fläche ergibt den Druck.",
     ],
     "chapter_5": [
-        "Sıcaklık ve mol sayısı sabitken pistonu aşağı indirirsek aynı gaz daha küçük bir hacme sıkışır.",
-        "Moleküller duvarlara daha sık çarpar. Böylece basınç yükselir ve PV çarpımı sabit kalır.",
+        "Bei konstanter Temperatur und Stoffmenge drücken wir den Kolben nach unten; dasselbe Gas wird auf ein kleineres Volumen zusammengedrückt.",
+        "Die Moleküle treffen häufiger auf die Wände. Dadurch steigt der Druck, und das Produkt p mal V bleibt konstant.",
     ],
     "chapter_6": [
-        "Kabın hacmi ve gaz miktarı sabit. Isıtınca moleküllerin ortalama kinetik enerjisi yükselir.",
-        "Isıtıcı enerji aktarır. Moleküller hızlanır; duvara çarptıklarında daha büyük momentum değişimi oluştururlar.",
-        "Bir moleküle yakından bakalım: aynı sürede daha uzun yol alır ve duvara daha sık çarpar.",
-        "Mutlak sıcaklık Kelvin cinsinden ölçülür. Hacim sabitken basınç sıcaklıkla doğru orantılıdır.",
+        "Volumen und Gasmenge im Gefäß sind konstant. Beim Erwärmen steigt die mittlere kinetische Energie der Moleküle.",
+        "Der Heizer überträgt Energie. Die Moleküle werden schneller; beim Stoß gegen die Wand erzeugen sie eine größere Impulsänderung.",
+        "Schauen wir uns ein Molekül genauer an: In derselben Zeit legt es einen längeren Weg zurück und trifft häufiger auf die Wand.",
+        "Die absolute Temperatur wird in Kelvin gemessen. Bei konstantem Volumen ist der Druck proportional zur Temperatur.",
     ],
     "chapter_7": [
-        "Pistonun üstündeki ağırlık değişmediği için dış basınç sabit kalır.",
-        "Gazı ısıtınca moleküller hızlanır; piston yükselerek gazın daha büyük bir hacme yayılmasına izin verir.",
-        "Basınç ve gaz miktarı sabitken hacim, Kelvin cinsinden sıcaklıkla doğru orantılıdır.",
+        "Da sich das Gewicht auf dem Kolben nicht ändert, bleibt der äußere Druck konstant.",
+        "Erwärmen wir das Gas, werden die Moleküle schneller; der Kolben steigt und lässt das Gas sich auf ein größeres Volumen ausdehnen.",
+        "Bei konstantem Druck und konstanter Gasmenge ist das Volumen proportional zur Temperatur in Kelvin.",
     ],
     "chapter_8": [
-        "Sıcaklık ve hacim sabitken kaba daha fazla gaz molekülü ekliyoruz.",
-        "Daha çok molekül, duvarlara aynı sürede daha çok çarpışma demektir; basınç artar.",
-        "N, gazdaki toplam tanecik sayısıdır. n ise madde miktarıdır ve mol cinsinden ölçülür.",
-        "N alt A, Avogadro sabitidir; bir moldaki tanecik sayısını verir. Değeri yaklaşık 6,022 × 10 üzeri 23 bölü moldür.",
-        "Bu yüzden toplam tanecik sayısı N, mol miktarı n ile Avogadro sabiti N alt A'nın çarpımına eşittir.",
+        "Bei konstanter Temperatur und konstantem Volumen geben wir mehr Gasmoleküle in das Gefäß.",
+        "Mehr Moleküle bedeuten in derselben Zeit mehr Stöße gegen die Wände; der Druck steigt.",
+        "N ist die Gesamtzahl der Teilchen im Gas. n ist die Stoffmenge und wird in Mol gemessen.",
+        "N A ist die Avogadro-Konstante; sie gibt die Anzahl der Teilchen in einem Mol an. Ihr Wert beträgt etwa 6,022 mal 10 hoch 23 pro Mol.",
+        "Deshalb ist die Gesamtzahl der Teilchen N gleich dem Produkt aus der Stoffmenge n und der Avogadro-Konstante N A.",
     ],
     "chapter_9": [
-        "Önce sembolleri tanıyalım: P basınç, V hacim, n mol cinsinden madde miktarı, T mutlak sıcaklıktır. R ise evrensel gaz sabitidir.",
-        "Basınç, moleküllerin duvarlara çarpmasıyla oluşur. Küp biçimindeki bir kapta molekül bir duvara çarptığında x yönündeki momentumu iki m v x kadar değişir.",
-        "İki çarpışma arasındaki süre, molekülün karşı duvara gidip geri dönme süresidir. Kuvvet, momentum değişiminin zamana oranıdır.",
-        "Üç uzay yönünde hareket eşit dağıldığından x yönündeki hız karelerinin ortalaması, toplam hız kareleri ortalamasının üçte biridir. 1/3 buradan gelir.",
-        "Bir molekülün öteleme kinetik enerjisi yarım m v kare. N molekülün toplamı U kin olur; 1/2 de kinetik enerji tanımından gelir.",
-        "Böylece PV = 2/3 U kin çıkar. İki bölü üç katsayısı, basınç denklemindeki üçte bir ile kinetik enerjideki yarımın oranıdır.",
-        "Eşbölüşüm teoremine göre dengede x, y ve z yönlerinin her biri ortalama yarım k B T enerji taşır. Üç yön, 3/2 katsayısını verir.",
-        "k B, Boltzmann sabitidir: sıcaklık ile tek tek taneciklerin enerji ölçeğini bağlar. Değeri joule bölü kelvin cinsindendir.",
-        "N toplam tanecik sayısıdır. Bir molda N alt A kadar tanecik bulunur; bu yüzden N = n N alt A.",
-        "Bir moldaki N alt A taneciğin her birine düşen k B çarpı T enerjisini toplarsak n çarpı N alt A çarpı k B çarpı T elde edilir.",
-        "Bu nedenle N alt A çarpı k B, mol başına enerji ölçeğini veren R evrensel gaz sabitidir. R yaklaşık 8,314 joule bölü mol kelvindir.",
-        "Sonuç PV = nRT. Buradaki T, mutlak sıcaklıktır: sıfır noktası mutlak sıfır olan Kelvin ölçeğinde yazılır. Santigrat dereceyle T = t + 273,15.",
-        "Boyle, Gay-Lussac ve Charles yasaları; PV = nRT denkleminde bazı değişkenler sabit tutulduğunda ortaya çıkar.",
+        "Zuerst die Symbole: p ist der Druck, V das Volumen, n die Stoffmenge in Mol und T die absolute Temperatur. R ist die universelle Gaskonstante.",
+        "Der Druck entsteht durch Stöße der Moleküle gegen die Wände. Prallt ein Molekül in einem Würfel gegen eine Wand, ändert sich sein Impuls in x-Richtung um 2 m v x.",
+        "Die Zeit zwischen zwei Stößen ist die Zeit für den Weg zur gegenüberliegenden Wand und zurück. Die Kraft ist die Impulsänderung pro Zeit.",
+        "Die Bewegung verteilt sich gleichmäßig auf die drei Raumrichtungen. Deshalb ist der Mittelwert von v x Quadrat ein Drittel des Mittelwerts von v Quadrat. Daher kommt das Drittel.",
+        "Die Translationsenergie eines Moleküls ist ein halb m v Quadrat. Die Summe über alle N Moleküle ist U kin; das Halbe stammt aus der Definition der kinetischen Energie.",
+        "So erhalten wir p V gleich zwei Drittel U kin. Der Faktor zwei Drittel ist das Verhältnis aus dem Drittel in der Druckgleichung und dem Halben in der kinetischen Energie.",
+        "Nach dem Gleichverteilungssatz trägt im Gleichgewicht jede der Richtungen x, y und z im Mittel ein halb k B T. Drei Richtungen ergeben den Faktor drei Halbe.",
+        "k B ist die Boltzmann-Konstante: Sie verknüpft die Temperatur mit der Energie einzelner Teilchen. Ihre Einheit ist Joule pro Kelvin.",
+        "N ist die Gesamtzahl der Teilchen. Ein Mol enthält N A Teilchen; deshalb gilt N gleich n mal N A.",
+        "Setzen wir alles ein, kürzen sich zwei Drittel und drei Halbe weg: p V gleich N k B T, also p V gleich n mal N A mal k B mal T.",
+        "Das Produkt N A mal k B ist die universelle Gaskonstante R, etwa 8,314 Joule pro Mol und Kelvin.",
+        "Ergebnis: p V gleich n R T. T ist die absolute Temperatur in Kelvin, deren Nullpunkt der absolute Nullpunkt ist. Aus Grad Celsius rechnet man T gleich t plus 273,15.",
+        "Die Gesetze von Boyle-Mariotte, Amontons und Gay-Lussac folgen aus p V gleich n R T, wenn man einige Größen konstant hält.",
     ],
     "chapter_10a": [
-        "Konduktion, yani iletim: İnce belli Türk çay bardağındaki çayın içine metal bir kaşık daldırdık.",
-        "Kaşığın çayda kalan ucu ısınır. Metalin kristal örgüsündeki atomlar denge konumları çevresinde titreşir.",
-        "Sıcak uca enerji aktarıldığında titreşimler güçlenir. Komşu atomlarla etkileşim, bu enerjiyi örgü boyunca yayar.",
-        "Yaklaşık bin atomu büyüterek görüyoruz. Bu bir model: gerçek atomlar ve aralarındaki uzaklıklar burada ölçekli değildir.",
-        "Atomlar kaşık boyunca ilerlemiyor; her biri kendi denge konumu çevresinde titreşiyor. İlerleyen şey enerjidir.",
-        "Metallerde elektronlar da ısı taşır. Bu yakın planda özellikle atom örgüsünün titreşimlerle enerji aktarımını inceliyoruz.",
-        "Enerji sıcak çaydan daha soğuk kaşık sapına doğru akar. Sapın ucu zamanla ısınır; kaşık bütünüyle yer değiştirmez.",
+        "Wärmeleitung, also Konduktion: Wir tauchen einen Metalllöffel in ein schlankes türkisches Teeglas.",
+        "Das Ende im Tee wird heiß. Die Atome im Kristallgitter des Metalls schwingen um ihre Ruhelagen.",
+        "Am heißen Ende schwingen sie stärker. Über die Kopplung an die Nachbaratome breitet sich diese Energie durch das Gitter aus.",
+        "Wir zeigen etwa 1.500 Atome stark vergrößert. Das ist ein Modell: Atome und Abstände sind nicht maßstabsgetreu.",
+        "Die Atome wandern nicht den Löffel entlang; jedes schwingt um seine eigene Ruhelage. Was sich ausbreitet, ist die Energie.",
+        "In Metallen transportieren freie Elektronen sogar den größten Teil der Wärme. In dieser Nahaufnahme betrachten wir nur die Gitterschwingungen.",
+        "Die Energie fließt vom heißen Tee zum kälteren Stiel. Das Ende des Stiels wird mit der Zeit warm; der Löffel selbst bewegt sich nicht.",
     ],
     "chapter_10b": [
-        "Konvektion, yani taşınım, sıvı ve gazlarda maddenin toplu hareketiyle gerçekleşir.",
-        "Alttan ısıtılan su ısınır, genleşir ve yoğunluğu azalır; bu nedenle yukarı yükselir.",
-        "Daha soğuk ve yoğun su aşağı iner. Böylece kap içinde bir dolaşım akımı oluşur.",
-        "Mola da hareket eden suyla birlikte taşınır; enerji, akışkanın hareketiyle yayılır.",
+        "Wärmeströmung, also Konvektion, entsteht in Flüssigkeiten und Gasen durch die Bewegung der Materie selbst.",
+        "Von unten erwärmtes Wasser dehnt sich aus und wird weniger dicht; deshalb steigt es nach oben.",
+        "Kälteres, dichteres Wasser sinkt nach unten. So entsteht im Gefäß ein Strömungskreislauf.",
+        "Auch Mola wird mit dem strömenden Wasser mitgetragen; die Energie wird mit dem Fluid transportiert.",
     ],
     "chapter_10c": [
-        "Strahlung, yani ışıma, elektromanyetik dalgalarla enerji aktarımıdır.",
-        "Güneş'ten gelen ışınım uzay boşluğunu geçebilir; arada hava ya da başka bir madde olması gerekmez.",
-        "Elektromanyetik dalgada elektrik alanı ve manyetik alan birbirine ve ilerleme yönüne diktir.",
-        "Dalga yüzeye ulaştığında soğurulabilir. Enerji yüzeydeki taneciklere aktarılır; yüzey ısınır.",
-        "Mola'nın hareketi de hızlanır.",
-        "İletim atomdan atoma, taşınım akışkanın hareketiyle; ışıma ise elektromanyetik dalgalarla gerçekleşir.",
+        "Wärmestrahlung ist Energieübertragung durch elektromagnetische Wellen.",
+        "Die Strahlung der Sonne durchquert den leeren Weltraum; dazwischen braucht es weder Luft noch einen anderen Stoff.",
+        "In einer elektromagnetischen Welle stehen elektrisches und magnetisches Feld senkrecht aufeinander und senkrecht zur Ausbreitungsrichtung.",
+        "Trifft die Welle auf eine Oberfläche, kann sie absorbiert werden. Die Energie geht auf die Teilchen der Oberfläche über; sie erwärmt sich.",
+        "Auch Mola bewegt sich schneller.",
+        "Leitung geschieht von Atom zu Atom, Strömung mit dem bewegten Fluid und Strahlung mit elektromagnetischen Wellen.",
     ],
     "chapter_11": [
-        "Bütün yolculuğu birleştirelim: gazın durumunu basınç, hacim, madde miktarı ve mutlak sıcaklık belirler.",
-        "Basınç moleküllerin duvarlara çarpmasıyla oluşur. Sıcaklık ortalama öteleme kinetik enerjisiyle ilişkilidir.",
-        "İdeal gaz denkleminde sıcaklık mutlaka Kelvin cinsinden yazılır.",
-        "Boyle, Gay-Lussac ve Charles yasaları; PV = nRT denkleminde bazı değişkenler sabitken ortaya çıkar.",
-        "Enerji iletimle atomdan atoma, taşınımla akışkanla, ışımayla elektromanyetik dalgalarla aktarılır.",
-        "Unutma: sıcaklık ortalama, iç enerji toplamdır. Isı ise enerji aktarım sürecidir.",
+        "Fassen wir die ganze Reise zusammen: Der Zustand eines Gases wird durch Druck, Volumen, Stoffmenge und absolute Temperatur beschrieben.",
+        "Der Druck entsteht durch Stöße der Moleküle gegen die Wände. Die Temperatur hängt mit der mittleren kinetischen Energie der Translation zusammen.",
+        "In der Zustandsgleichung des idealen Gases steht die Temperatur immer in Kelvin.",
+        "Die Gesetze von Boyle-Mariotte, Amontons und Gay-Lussac folgen aus p V gleich n R T, wenn einige Größen konstant bleiben.",
+        "Energie wird durch Leitung von Atom zu Atom, durch Strömung mit dem Fluid und durch Strahlung mit elektromagnetischen Wellen übertragen.",
+        "Merke: Die Temperatur ist ein Mittelwert, die innere Energie eine Summe. Wärme ist der Vorgang der Energieübertragung.",
     ],
 }
 
@@ -120,8 +124,11 @@ def _precompute_paths(
     radius: float = 1.38,
     half_height: float = 1.78,
     seed: int = 24,
-) -> np.ndarray:
-    """Silindirin içinde yansıyan molekül yollarını bir kez hesapla."""
+) -> tuple[np.ndarray, np.ndarray]:
+    """Berechnet einmal die Bahnen der Moleküle, die im Zylinder reflektiert werden.
+
+    Gibt die Bahnen und die (bei elastischen Stößen konstanten) Geschwindigkeitsbeträge zurück.
+    """
     rng = np.random.default_rng(seed)
     sample_count = int(duration * samples_per_second) + 1
     dt = 1 / samples_per_second
@@ -163,7 +170,7 @@ def _precompute_paths(
         velocities[bottom, 1] *= -1
 
         paths[frame] = positions
-    return paths
+    return paths, speeds
 
 
 def _sample_path(path: np.ndarray, time: float, samples_per_second: int = 24) -> np.ndarray:
@@ -185,8 +192,15 @@ def _simulate_gas_paths(
     initial_velocities: np.ndarray | None = None,
     samples_per_second: int = 24,
     substeps: int = 4,
+    thermostat: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, list[np.ndarray], list[np.ndarray], np.ndarray]:
-    """Önceden hesaplanan yolları, çarpışma sayılarını ve olay zamanlarını üret."""
+    """Erzeugt vorab berechnete Bahnen, Stoßzahlen und Ereigniszeiten.
+
+    Ein bewegter Kolben verrichtet Arbeit am Gas: Beim Zusammendrücken werden die
+    Moleküle schneller, beim Ausdehnen langsamer. Mit thermostat=True wird die
+    gesamte kinetische Energie konstant gehalten (Wärmeaustausch mit der Umgebung
+    bzw. dem Heizer), damit die Temperatur wie in der Erzählung konstant bleibt.
+    """
     rng = np.random.default_rng(seed)
     positions = initial_positions.copy()
     if initial_velocities is None:
@@ -196,6 +210,7 @@ def _simulate_gas_paths(
         velocities *= rng.uniform(0.9, 1.45, size=(len(positions), 1))
     else:
         velocities = initial_velocities.copy()
+    target_energy = float(np.sum(velocities**2))
 
     frame_count = int(duration * samples_per_second) + 1
     paths = np.empty((frame_count, len(positions), 3), dtype=float)
@@ -242,6 +257,11 @@ def _simulate_gas_paths(
                 piston_hit_times[molecule_index].append(elapsed)
             hits += int(np.count_nonzero(top_hit))
 
+            if thermostat:
+                current_energy = float(np.sum(velocities**2))
+                if current_energy > 0:
+                    velocities *= np.sqrt(target_energy / current_energy)
+
         paths[frame] = positions
         hit_totals[frame] = hits
 
@@ -255,7 +275,11 @@ def _simulate_gas_paths(
 
 
 def _text(content: str, size: float = 30, color=WHITE) -> Text:
-    return Text(content, font=FONT, font_size=size, color=color)
+    text = Text(content, font=FONT, font_size=size, color=color)
+    # Deutsche Texte sind oft länger: zu breite Zeilen auf Bildbreite begrenzen.
+    if text.width > MAX_TEXT_WIDTH:
+        text.scale_to_fit_width(MAX_TEXT_WIDTH)
+    return text
 
 
 def _prediction_prompt(
@@ -266,7 +290,7 @@ def _prediction_prompt(
     labeled_choices: bool = False,
 ):
     question_text = _text(question, 30, YELLOW).to_edge(UP, buff=0.42)
-    choice_labels = ("ARTAR", "AZALIR", "DEĞİŞMEZ")
+    choice_labels = ("NIMMT ZU", "NIMMT AB", "BLEIBT GLEICH")
     displayed_choices = (
         tuple(f"{letter}) {choice}" for letter, choice in zip("ABC", choice_labels))
         if labeled_choices
@@ -296,14 +320,14 @@ def _close_prediction(scene: ThreeDScene, card: VGroup, correct: Text, explanati
 
 
 class Chapter1(ThreeDScene):
-    """Bölüm 1 — molekül perspektifiyle gaz sistemine giriş."""
+    """Kapitel 1: Einführung in das Gassystem aus der Sicht eines Moleküls."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=68 * DEGREES, theta=-48 * DEGREES, zoom=0.9)
 
-        title = _text("THE PHYSICS OF GASES", 38, BLUE_A).to_edge(UP, buff=0.35)
-        subtitle = _text("Görünmeyen dünyaya yolculuk", 24, GREY_A).next_to(
+        title = _text("DIE PHYSIK DER GASE", 38, BLUE_A).to_edge(UP, buff=0.35)
+        subtitle = _text("Reise in die unsichtbare Welt", 24, GREY_A).next_to(
             title, DOWN, buff=0.15
         )
         self.add_fixed_in_frame_mobjects(title, subtitle)
@@ -333,11 +357,12 @@ class Chapter1(ThreeDScene):
         )
 
         duration = 9
-        paths = _precompute_paths(40, duration)
+        paths, speeds = _precompute_paths(40, duration)
         tracker = ValueTracker(0)
         molecules = VGroup()
         for i, path in enumerate(paths.transpose(1, 0, 2)):
-            speed_fraction = (i % 7) / 6
+            # Farbe zeigt die tatsächliche Geschwindigkeit: blau = langsam, orange = schnell.
+            speed_fraction = (speeds[i] - 0.65) / (1.45 - 0.65)
             color = interpolate_color(BLUE_C, ORANGE, speed_fraction)
             molecule = Dot3D(
                 radius=0.075 if i == 0 else 0.045,
@@ -377,7 +402,7 @@ class Chapter1(ThreeDScene):
 
         self.move_camera(frame_center=ORIGIN, zoom=0.9, run_time=2)
         self.play(tracker.animate.set_value(7), run_time=2, rate_func=linear)
-        intro = _text("Sen artık bir moleküldün…", 30, YELLOW).to_edge(DOWN, buff=0.4)
+        intro = _text("Eben warst du ein Molekül …", 30, YELLOW).to_edge(DOWN, buff=0.4)
         self.add_fixed_in_frame_mobjects(intro)
         self.play(FadeIn(intro), run_time=0.8)
         self.wait(2)
@@ -389,12 +414,12 @@ class Chapter1(ThreeDScene):
         self.stop_ambient_camera_rotation()
         molecules.clear_updaters()
 
-        heading = _text("Bir gazı dört değişkenle anlatırız", 30, WHITE).to_edge(UP, buff=0.4)
+        heading = _text("Ein Gas beschreiben wir mit vier Größen", 30, WHITE).to_edge(UP, buff=0.4)
         indicators = VGroup(
-            _text("P  Basınç", 26, BLUE_A),
-            _text("V  Hacim", 26, GREEN_A),
-            _text("n  Madde miktarı", 26, YELLOW),
-            _text("T  Mutlak sıcaklık", 26, ORANGE),
+            _text("p  Druck", 26, BLUE_A),
+            _text("V  Volumen", 26, GREEN_A),
+            _text("n  Stoffmenge", 26, YELLOW),
+            _text("T  Absolute Temperatur", 26, ORANGE),
         ).arrange(RIGHT, buff=0.48).to_edge(DOWN, buff=0.4)
         self.add_fixed_in_frame_mobjects(heading, indicators)
         self.play(FadeIn(heading), LaggedStart(*[FadeIn(item) for item in indicators], lag_ratio=0.2))
@@ -402,44 +427,55 @@ class Chapter1(ThreeDScene):
 
 
 class Chapter2(ThreeDScene):
-    """Bölüm 2 — iç enerji ve ısının aktarımı."""
+    """Kapitel 2: Innere Energie und Wärmeübertragung."""
 
     def construct(self):
         self.camera.background_color = BLACK
-        self.set_camera_orientation(phi=70 * DEGREES, theta=-40 * DEGREES, zoom=1.0)
+        # Frontansicht: Bei der früheren flachen Kamera (phi=70°) lagen alle Beschriftungen
+        # in der Bodenebene und waren stark verzerrt. Die 3D-Wirkung kommt jetzt durch
+        # leicht gedrehte Körper.
+        self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        heading = _text("ENERJİ: MOLEKÜLDEN SİSTEME", 34, BLUE_A).to_edge(UP, buff=0.35)
+        heading = _text("ENERGIE: VOM MOLEKÜL ZUM SYSTEM", 34, BLUE_A).to_edge(UP, buff=0.35)
         self.add_fixed_in_frame_mobjects(heading)
         self.play(FadeIn(heading), run_time=1)
 
+        mola_center = LEFT * 3.6 + UP * 0.1
         mola = Dot3D(
             radius=0.24,
             resolution=(8, 8),
             color=BLUE_C,
             fill_opacity=1,
             stroke_width=0,
-        ).move_to(LEFT * 2.7 + DOWN * 0.1)
+        ).move_to(mola_center)
         mola_name = _text("Mola", 23, ORANGE).to_corner(UL, buff=0.4)
         self.add_fixed_in_frame_mobjects(mola_name)
         self.play(FadeIn(mola), FadeIn(mola_name), run_time=1)
 
         labels = [
-            "Öteleme kinetik enerjisi",
-            "Dönme kinetik enerjisi",
-            "Titreşim kinetik enerjisi",
-            "Potansiyel enerji (gerçek gaz)",
+            "Translationsenergie (kinetisch)",
+            "Rotationsenergie (kinetisch)",
+            "Schwingungsenergie",
+            "Wechselwirkungsenergie (reales Gas)",
         ]
         colors = [BLUE_C, GREEN_C, YELLOW, ORANGE]
         segments = VGroup()
         for i, (label, color) in enumerate(zip(labels, colors)):
-            block = Cube(
-                side_length=0.62,
-                fill_color=color,
-                fill_opacity=0.88,
-                stroke_color=WHITE,
-                stroke_width=0.5,
-            ).move_to(RIGHT * 1.5 + UP * (1.1 - i * 0.68))
-            label_text = _text(label, 21, color).move_to(RIGHT * 3.2 + UP * (1.1 - i * 0.68))
+            y = 1.25 - i * 0.78
+            block = (
+                Cube(
+                    side_length=0.52,
+                    fill_color=color,
+                    fill_opacity=0.88,
+                    stroke_color=WHITE,
+                    stroke_width=0.5,
+                )
+                .rotate(-30 * DEGREES, axis=UP)
+                .rotate(20 * DEGREES, axis=RIGHT)
+                .move_to(RIGHT * 0.1 + UP * y)
+            )
+            label_text = _text(label, 21, color)
+            label_text.next_to(np.array([0.75, y, 0]), RIGHT, buff=0)
             segments.add(VGroup(block, label_text))
 
         for segment in segments:
@@ -452,12 +488,12 @@ class Chapter2(ThreeDScene):
             buff=0.12,
             stroke_width=1.5,
         )
-        total_label = _text("Bir molekülün toplam enerjisi", 23, WHITE).next_to(
+        total_label = _text("Gesamtenergie eines Moleküls", 23, WHITE).next_to(
             total_bar, DOWN, buff=0.18
         )
         self.play(Create(total_bar), FadeIn(total_label), run_time=1)
         ideal_note = _text(
-            "İdeal gazda moleküller arası potansiyel enerji ihmal edilir.",
+            "Beim idealen Gas wird die potenzielle Energie zwischen den Molekülen vernachlässigt.",
             22,
             GREY_A,
         ).to_edge(DOWN, buff=0.35)
@@ -474,27 +510,28 @@ class Chapter2(ThreeDScene):
                     fill_opacity=0.9,
                     stroke_width=0,
                 ).move_to(
-                    LEFT * 2.7
+                    mola_center
                     + RIGHT * ((i % 6) * 0.22 - 0.55)
                     + UP * ((i // 6) * 0.22 - 0.3)
                 )
                 for i in range(18)
             ]
         )
-        sum_label = _text("Bütün moleküllerin enerjileri toplanır", 24, WHITE).to_edge(
+        sum_label = _text("Die Energien aller Moleküle werden addiert", 24, WHITE).to_edge(
             UP, buff=1.1
         )
         internal_energy = _text(
-            "İÇ ENERJİ  U = Σ (E öteleme + E dönme + E titreşim + E potansiyel)",
+            "INNERE ENERGIE  U = Σ (E_trans + E_rot + E_schw + E_pot)",
             25,
             YELLOW,
         ).to_edge(DOWN, buff=0.85)
-        self.play(FadeIn(other_molecules), FadeIn(sum_label), run_time=1.2)
+        # Erst im Bild fixieren, dann einblenden (sonst springt der Text nach dem Einblenden).
         self.add_fixed_in_frame_mobjects(sum_label, internal_energy)
+        self.play(FadeIn(other_molecules), FadeIn(sum_label), run_time=1.2)
         self.play(FadeIn(internal_energy), run_time=1)
         self.wait(3)
 
-        # Isı aktarımı, iç enerjinin kendisi değil iki sistem arasındaki enerji akışıdır.
+        # Wärme ist nicht die innere Energie selbst, sondern ein Energiefluss zwischen zwei Systemen.
         self.play(
             FadeOut(other_molecules),
             FadeOut(segments),
@@ -519,7 +556,7 @@ class Chapter2(ThreeDScene):
             fill_opacity=0.45,
             stroke_color=RED_A,
             stroke_width=1.5,
-        ).move_to(LEFT * 2)
+        ).rotate(20 * DEGREES, axis=RIGHT).move_to(LEFT * 2)
         cold_vessel = Cylinder(
             radius=0.62,
             height=1.45,
@@ -529,9 +566,9 @@ class Chapter2(ThreeDScene):
             fill_opacity=0.45,
             stroke_color=BLUE_A,
             stroke_width=1.5,
-        ).move_to(RIGHT * 2)
-        hot_label = _text("SICAK SİSTEM", 22, RED_A).move_to(LEFT * 2 + DOWN * 1.25)
-        cold_label = _text("SOĞUK SİSTEM", 22, BLUE_A).move_to(RIGHT * 2 + DOWN * 1.25)
+        ).rotate(20 * DEGREES, axis=RIGHT).move_to(RIGHT * 2)
+        hot_label = _text("HEISSES SYSTEM", 22, RED_A).move_to(LEFT * 2 + DOWN * 1.3)
+        cold_label = _text("KALTES SYSTEM", 22, BLUE_A).move_to(RIGHT * 2 + DOWN * 1.3)
         self.play(
             FadeIn(hot_vessel),
             FadeIn(cold_vessel),
@@ -540,8 +577,8 @@ class Chapter2(ThreeDScene):
             run_time=1.2,
         )
 
-        question = "Soğuk sisteme enerji aktarılırsa iç enerjisi ne olur?"
-        card, correct = _prediction_prompt(self, question, "ARTAR")
+        question = "Das kalte System erhält Energie: Was passiert mit seiner inneren Energie?"
+        card, correct = _prediction_prompt(self, question, "NIMMT ZU")
 
         transfer_dots = VGroup(
             *[
@@ -565,7 +602,7 @@ class Chapter2(ThreeDScene):
             rate_func=linear,
         )
         explanation = _text(
-            "Isı Q: sıcaklık farkıyla aktarılan enerjidir; bir enerji deposu değildir.",
+            "Wärme Q: Energie, die wegen eines Temperaturunterschieds übertragen wird; kein Energiespeicher.",
             22,
             WHITE,
         )
@@ -574,7 +611,7 @@ class Chapter2(ThreeDScene):
 
         heat_formula = _text("ΔU = Q + W", 40, YELLOW).to_edge(UP, buff=1.05)
         sign_note = _text(
-            "W: sisteme yapılan iş  •  Isı: sıcak olandan soğuk olana aktarım",
+            "W: am System verrichtete Arbeit  •  Wärme fließt vom heißeren zum kälteren System",
             21,
             GREY_A,
         ).to_edge(DOWN, buff=0.35)
@@ -584,13 +621,13 @@ class Chapter2(ThreeDScene):
 
 
 class Chapter3(ThreeDScene):
-    """Bölüm 3 — sıcaklığın ortalama kinetik enerjiyle ilişkisi."""
+    """Kapitel 3: Zusammenhang zwischen Temperatur und mittlerer kinetischer Energie."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("SICAKLIK: ENERJİLERİN ORTALAMASI", 32, BLUE_A).to_edge(
+        title = _text("TEMPERATUR: MITTELWERT DER ENERGIEN", 32, BLUE_A).to_edge(
             UP, buff=0.35
         )
         self.add_fixed_in_frame_mobjects(title)
@@ -611,37 +648,62 @@ class Chapter3(ThreeDScene):
                 stroke_width=2,
             ),
         )
-        counts = np.array([0.2, 0.42, 0.75, 1.1, 1.38, 1.18, 0.82, 0.46, 0.21])
-        x_values = np.linspace(-2.8, 2.8, len(counts))
-        bars = VGroup()
-        for x, height in zip(x_values, counts):
-            bar = Cube(
-                side_length=1,
-                fill_color=BLUE_C,
-                fill_opacity=0.88,
-                stroke_color=BLUE_A,
-                stroke_width=0.5,
+
+        # Maxwell-Boltzmann-Verteilung der kinetischen Energie: unsymmetrisch, mit langem
+        # Ausläufer zu hohen Energien. Maximum bei k_B T / 2, Mittelwert bei 3/2 k_B T.
+        bin_energies = np.linspace(0.25, 4.25, 9)  # in Einheiten von k_B · T (kaltes Gas)
+
+        def energy_to_x(energy: float) -> float:
+            return -2.8 + (energy - bin_energies[0]) * 1.4
+
+        def maxwell_boltzmann(k_t: float) -> np.ndarray:
+            return (
+                2 / np.sqrt(np.pi)
+                * np.sqrt(bin_energies)
+                / k_t**1.5
+                * np.exp(-bin_energies / k_t)
             )
-            bar.stretch_to_fit_width(0.42)
-            bar.stretch_to_fit_depth(0.42)
-            bar.stretch_to_fit_height(float(height))
-            bar.move_to(np.array([x, baseline + height / 2, 0]))
-            bars.add(bar)
-        mean_x = float(np.average(x_values, weights=counts))
+
+        cold_density = maxwell_boltzmann(1.0)
+        hot_density = maxwell_boltzmann(1.5)
+        height_scale = 1.38 / cold_density.max()
+
+        def energy_bars(density: np.ndarray, color, stroke_color) -> VGroup:
+            group = VGroup()
+            for energy, value in zip(bin_energies, density):
+                height = float(value * height_scale)
+                bar = Cube(
+                    side_length=1,
+                    fill_color=color,
+                    fill_opacity=0.88,
+                    stroke_color=stroke_color,
+                    stroke_width=0.5,
+                )
+                bar.stretch_to_fit_width(0.42)
+                bar.stretch_to_fit_depth(0.42)
+                bar.stretch_to_fit_height(height)
+                bar.move_to(np.array([energy_to_x(energy), baseline + height / 2, 0]))
+                group.add(bar)
+            return group
+
+        bars = energy_bars(cold_density, BLUE_C, BLUE_A)
+        hot_bars = energy_bars(hot_density, ORANGE, YELLOW)
+        mean_x = energy_to_x(1.5)
+        hot_mean_x = energy_to_x(1.5 * 1.5)
         average_line = DashedLine(
             np.array([mean_x, baseline, 0]),
             np.array([mean_x, 1.75, 0]),
             color=YELLOW,
             stroke_width=3,
         )
-        average_label = _text("Ortalama", 20, YELLOW).move_to(
+        average_label = _text("Mittelwert", 20, YELLOW).move_to(
             np.array([mean_x, 1.92, 0])
         )
         labels = VGroup(
-            _text("Düşük enerji", 18, GREY_A).move_to(np.array([-2.45, -1.38, 0])),
-            _text("Yüksek enerji", 18, GREY_A).move_to(np.array([2.35, -1.38, 0])),
+            _text("Niedrige Energie", 18, GREY_A).move_to(np.array([-2.4, -1.38, 0])),
+            _text("Hohe Energie", 18, GREY_A).move_to(np.array([2.4, -1.38, 0])),
         )
-        count_label = _text("Molekül sayısı", 18, GREY_A).rotate(90 * DEGREES)
+        count_label = _text("Anzahl der Moleküle", 18, GREY_A).rotate(90 * DEGREES)
         count_label.move_to(np.array([-3.65, 0.1, 0]))
         for fixed_object in (axes, bars, average_line, average_label, labels, count_label):
             self.add_fixed_in_frame_mobjects(fixed_object)
@@ -659,7 +721,7 @@ class Chapter3(ThreeDScene):
         )
 
         explanation = _text(
-            "Çubuklar moleküllerin kinetik enerjilerini gösterir; çoğu orta enerjidedir.",
+            "Balken: Anzahl der Moleküle pro Energiebereich. Viele sind eher langsam, wenige sehr schnell.",
             22,
             WHITE,
         ).to_edge(DOWN, buff=0.35)
@@ -667,20 +729,21 @@ class Chapter3(ThreeDScene):
         self.play(FadeIn(explanation), run_time=0.7)
         self.wait(2)
 
-        heat_label = _text("Isıtma", 23, ORANGE).to_corner(UR, buff=0.4)
+        heat_label = _text("Erwärmen", 23, ORANGE).to_corner(UR, buff=0.4)
         self.add_fixed_in_frame_mobjects(heat_label)
+        # Beim Erwärmen wird die Verteilung breiter und flacher; sie verschiebt sich nicht einfach.
         self.play(
-            bars.animate.shift(RIGHT * 0.55).set_color(ORANGE),
-            average_line.animate.shift(RIGHT * 0.55).set_color(ORANGE),
-            average_label.animate.shift(RIGHT * 0.55).set_color(ORANGE),
+            Transform(bars, hot_bars),
+            average_line.animate.shift(RIGHT * (hot_mean_x - mean_x)).set_color(ORANGE),
+            average_label.animate.shift(RIGHT * (hot_mean_x - mean_x)).set_color(ORANGE),
             FadeIn(heat_label),
             run_time=1.8,
         )
-        formula = _text("Ortalama E_kin = (3/2) k_B T", 29, YELLOW).to_edge(
+        formula = _text("Mittlere E_kin = (3/2) k_B T", 29, YELLOW).to_edge(
             DOWN, buff=0.35
         )
         average_note = _text(
-            "Sıcaklık, öteleme kinetik enerjisinin ortalamasıyla ilişkilidir; tüm enerji türlerinin değil.",
+            "Die Temperatur hängt mit der mittleren kinetischen Energie der Translation zusammen, nicht mit allen Energieformen.",
             18,
             WHITE,
         ).next_to(formula, UP, buff=0.12)
@@ -758,16 +821,16 @@ class Chapter3(ThreeDScene):
                     )
                 )
         comparison = _text(
-            "Aynı sıcaklık: ortalama kinetik enerji aynı",
+            "Gleiche Temperatur: gleiche mittlere kinetische Energie",
             24,
             YELLOW,
         ).to_edge(UP, buff=0.85)
         labels = VGroup(
-            _text("Çok molekül", 22, BLUE_A).move_to(np.array([-2.0, -1.4, 0])),
-            _text("Az molekül", 22, GREEN_A).move_to(np.array([2.0, -1.4, 0])),
+            _text("Viele Moleküle", 22, BLUE_A).move_to(np.array([-2.0, -1.4, 0])),
+            _text("Wenige Moleküle", 22, GREEN_A).move_to(np.array([2.0, -1.4, 0])),
         )
         total_energy = _text(
-            "Molekül sayısı fazla → toplam iç enerji U daha büyük",
+            "Mehr Moleküle → größere gesamte innere Energie U",
             23,
             WHITE,
         ).move_to(np.array([0, -3.05, 0]))
@@ -786,13 +849,13 @@ class Chapter3(ThreeDScene):
 
 
 class Chapter4(ThreeDScene):
-    """Bölüm 4 — basınç, duvar çarpışmalarından doğar."""
+    """Kapitel 4: Druck entsteht durch Stöße gegen die Wand."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=68 * DEGREES, theta=-38 * DEGREES, zoom=1.0)
 
-        title = _text("BASINÇ: DUVARA ÇARPIŞMALAR", 32, BLUE_A).to_edge(
+        title = _text("DRUCK: STÖSSE GEGEN DIE WAND", 32, BLUE_A).to_edge(
             UP, buff=0.35
         )
         self.add_fixed_in_frame_mobjects(title)
@@ -835,7 +898,7 @@ class Chapter4(ThreeDScene):
         self.add(mola)
 
         label = _text("Mola", 22, ORANGE).to_corner(UL, buff=0.4)
-        counter_label = _text("Duvar çarpması:", 23, WHITE).to_corner(UR, buff=0.55)
+        counter_label = _text("Wandstöße:", 23, WHITE).to_corner(UR, buff=0.55)
         counter = _text("0", 30, YELLOW).next_to(counter_label, DOWN, buff=0.15)
         counter_position = counter.get_center().copy()
         counter.add_updater(
@@ -876,19 +939,19 @@ class Chapter4(ThreeDScene):
             stroke_width=7,
         )
         vectors_text = VGroup(
-            _text("Çarpmadan önce", 19, YELLOW).move_to(np.array([-3.2, -2.12, 0])),
-            _text("Çarpmadan sonra", 19, BLUE_B).move_to(np.array([3.2, -2.12, 0])),
+            _text("Vor dem Stoß", 19, YELLOW).move_to(np.array([-3.2, -2.12, 0])),
+            _text("Nach dem Stoß", 19, BLUE_B).move_to(np.array([3.2, -2.12, 0])),
         )
         self.add_fixed_in_frame_mobjects(vector_before, vector_after, vectors_text)
         self.wait(0.7)
         self.play(time.animate.set_value(5.2), run_time=3.68, rate_func=linear)
 
         explanation = _text(
-            "Mola'nın momentumu değişir; duvar, gelen her çarpışmada kuvvet alır.",
+            "Molas Impuls ändert sich; bei jedem Stoß wirkt eine Kraft auf die Wand.",
             21,
             WHITE,
         ).to_edge(DOWN, buff=0.9)
-        formula = _text("Basınç P = Kuvvet F / Yüzey alanı A", 27, YELLOW).to_edge(
+        formula = _text("Druck p = Kraft F / Fläche A", 27, YELLOW).to_edge(
             DOWN, buff=0.28
         )
         self.add_fixed_in_frame_mobjects(explanation, formula)
@@ -899,14 +962,14 @@ class Chapter4(ThreeDScene):
 
 
 class Chapter5(ThreeDScene):
-    """Bölüm 5 — Boyle yasası: sıcaklık ve mol sayısı sabit."""
+    """Kapitel 5: Gesetz von Boyle-Mariotte: Temperatur und Stoffmenge konstant."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("BOYLE YASASI", 34, BLUE_A).to_edge(UP, buff=0.3)
-        condition = _text("T ve n sabit", 21, GREY_A).next_to(title, DOWN, buff=0.1)
+        title = _text("GESETZ VON BOYLE-MARIOTTE", 34, BLUE_A).to_edge(UP, buff=0.3)
+        condition = _text("isotherm: T und n konstant", 21, GREY_A).next_to(title, DOWN, buff=0.1)
         self.add_fixed_in_frame_mobjects(title, condition)
         self.play(FadeIn(title), FadeIn(condition), run_time=0.8)
 
@@ -972,11 +1035,11 @@ class Chapter5(ThreeDScene):
             color=YELLOW,
             stroke_width=4,
         )
-        invariant_label = _text("Boyle: PV = sabit", 30, YELLOW)
-        volume_label = _text("Hacim V", 17, GREY_A).move_to(
+        invariant_label = _text("p · V = konstant", 30, YELLOW)
+        volume_label = _text("Volumen V", 17, GREY_A).move_to(
             graph_center + DOWN * 1.75
         )
-        pressure_label = _text("P", 17, GREY_A).move_to(
+        pressure_label = _text("p", 17, GREY_A).move_to(
             graph_center + LEFT * 1.9 + UP * 0.15
         )
         pressure_label.rotate(90 * DEGREES)
@@ -1025,15 +1088,19 @@ class Chapter5(ThreeDScene):
         inner_upper_initial = upper_initial - 0.12
         original_colors = [BLUE_C if index else ORANGE for index in range(len(gas))]
 
-        phase_label = _text("PİSTON SABİT", 20, GREEN_A).move_to(LEFT * 4.65 + UP * 2.1)
-        counter_heading = _text("Piston çarpması", 19, WHITE).move_to(
+        def graph_volume(wall: float) -> float:
+            # Dieselben (inneren) Grenzen wie in der Simulation, damit der Punkt bei V = 3 startet.
+            return 3 * (wall - inner_lower) / (inner_upper_initial - inner_lower)
+
+        phase_label = _text("KOLBEN FEST", 20, GREEN_A).move_to(LEFT * 4.65 + UP * 2.1)
+        counter_heading = _text("Stöße am Kolben", 19, WHITE).move_to(
             LEFT * 4.65 + UP * 1.55
         )
         counter_position = LEFT * 4.65 + UP * 0.95
         counter = _text("0", 34, YELLOW).move_to(counter_position)
-        measurement_label = _text(f"Son {observation_time:.0f} saniyede", 17, GREY_A).move_to(
-            LEFT * 4.65 + UP * 0.42
-        )
+        measurement_label = _text(
+            f"In den letzten {observation_time:.0f} Sekunden", 17, GREY_A
+        ).move_to(LEFT * 4.65 + UP * 0.42)
         table_width = 2.45
         table_height = 1.8
         table_center = LEFT * 4.75 + DOWN * 0.88
@@ -1075,10 +1142,10 @@ class Chapter5(ThreeDScene):
                 )
                 for row in range(1, 6)
             ],
-            _text("Ölçüm", 13, WHITE).move_to(
+            _text("Messung", 13, WHITE).move_to(
                 [table_center[0] - 0.62, table_top - table_row_height / 2, 0]
             ),
-            _text("Çarpma", 13, YELLOW).move_to(
+            _text("Stöße", 13, YELLOW).move_to(
                 [table_center[0] + 0.76, table_top - table_row_height / 2, 0]
             ),
             *[
@@ -1090,7 +1157,7 @@ class Chapter5(ThreeDScene):
                     ]
                 )
                 for row, label in enumerate(
-                    ["Başlangıç", "1. kademe", "2. kademe", "3. kademe", "4. kademe"]
+                    ["Anfang", "Stufe 1", "Stufe 2", "Stufe 3", "Stufe 4"]
                 )
             ],
         )
@@ -1146,6 +1213,9 @@ class Chapter5(ThreeDScene):
                 center_x=vessel_center_x,
                 upper_end=wall_end,
                 initial_velocities=velocities,
+                # Isotherm: Die Arbeit des Kolbens geht als Wärme an die Umgebung,
+                # die Teilchen werden also nicht schneller.
+                thermostat=True,
             )
             clock = ValueTracker(0)
             all_events = (
@@ -1212,15 +1282,11 @@ class Chapter5(ThreeDScene):
             phase_label.become(_text(label, 20, GREEN_A if wall_start == wall_end else ORANGE).move_to(
                 phase_label.get_center()
             ))
+            end_volume = graph_volume(wall_end)
             self.play(
                 clock.animate.set_value(duration),
                 piston.animate.shift(UP * (wall_end - wall_start)),
-                volume_point.animate.move_to(
-                    graph_axes.c2p(
-                        3 * (wall_end - lower) / (upper_initial - lower),
-                        4 / (3 * (wall_end - lower) / (upper_initial - lower)),
-                    )
-                ),
+                volume_point.animate.move_to(graph_axes.c2p(end_volume, 4 / end_volume)),
                 run_time=duration,
                 rate_func=linear,
             )
@@ -1238,15 +1304,15 @@ class Chapter5(ThreeDScene):
             observation_time,
             current_upper,
             current_upper,
-            f"ÖNCE — {observation_time:.1f} s ölçüm",
+            f"VORHER: {observation_time:.0f} s Messung",
         )
         baseline_hits = int(baseline_totals[-1])
         current_positions = baseline_paths
         record_collision_count(baseline_hits, 0)
 
-        question = "Pistonu yavaşça aşağı indirirsem ne değişir?"
+        question = "Kolben langsam nach unten: Was passiert mit dem Druck?"
         card, correct = _prediction_prompt(
-            self, question, "ARTAR", choice_buff=0.4, labeled_choices=True
+            self, question, "NIMMT ZU", choice_buff=0.4, labeled_choices=True
         )
 
         stage_upper_levels = np.linspace(
@@ -1261,7 +1327,7 @@ class Chapter5(ThreeDScene):
                 compression_time,
                 transition_start,
                 float(next_upper),
-                f"PİSTON İNİYOR — KADEME {stage_number}/4",
+                f"KOLBEN SINKT: STUFE {stage_number}/4",
             )
             current_positions = moved_positions
             current_upper = float(next_upper)
@@ -1272,21 +1338,21 @@ class Chapter5(ThreeDScene):
                 observation_time,
                 current_upper,
                 current_upper,
-                f"KADEME {stage_number}/4 — {observation_time:.1f} s ölçüm",
+                f"STUFE {stage_number}/4: {observation_time:.0f} s Messung",
             )
             stage_counts.append(int(measured_totals[-1]))
             current_positions = measured_positions
             record_collision_count(stage_counts[-1], stage_number)
 
         explanation = _text(
-            f"Aynı 4 saniyede piston çarpması: {baseline_hits} → {stage_counts[-1]}. "
-            "Hacim küçüldükçe çarpışmalar sıklaşır, basınç artar.",
+            f"Stöße am Kolben in jeweils {observation_time:.0f} s: {baseline_hits} → {stage_counts[-1]}. "
+            "Kleineres Volumen, häufigere Stöße, höherer Druck.",
             19,
             WHITE,
         )
         _close_prediction(self, card, correct, explanation)
 
-        summary = _text("V azalır  →  P artar", 25, YELLOW).to_edge(DOWN, buff=0.65)
+        summary = _text("V nimmt ab  →  p nimmt zu", 25, YELLOW).to_edge(DOWN, buff=0.65)
         self.add_fixed_in_frame_mobjects(summary)
         self.play(FadeIn(summary), run_time=0.7)
         self.wait(4)
@@ -1373,6 +1439,7 @@ def _play_gas_measurement(
     counter: Text,
     moving_objects: list[Mobject] | None = None,
     seed: int = 81,
+    thermostat: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, int]:
     paths, totals, collision_events, _, final_velocities = _simulate_gas_paths(
         positions,
@@ -1384,6 +1451,7 @@ def _play_gas_measurement(
         center_x=center_x,
         upper_end=upper_end,
         initial_velocities=velocities,
+        thermostat=thermostat,
     )
     clock = ValueTracker(0)
     original_colors = [molecule.get_color() for molecule in gas]
@@ -1455,14 +1523,16 @@ def _play_gas_measurement(
 
 
 class Chapter6(ThreeDScene):
-    """Bölüm 6 — Gay-Lussac yasası: hacim ve mol sayısı sabit."""
+    """Kapitel 6: Gesetz von Amontons (isochor): Volumen und Stoffmenge konstant."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("GAY-LUSSAC YASASI", 34, BLUE_A).to_edge(UP, buff=0.3)
-        condition = _text("Hacim V ve mol sayısı n sabit", 20, GREY_A).next_to(
+        # Im Deutschen heißt p ~ T bei konstantem V "Gesetz von Amontons"
+        # (auch 2. Gesetz von Gay-Lussac). V ~ T bei konstantem p ist Kapitel 7.
+        title = _text("GESETZ VON AMONTONS", 34, BLUE_A).to_edge(UP, buff=0.3)
+        condition = _text("isochor: Volumen V und Stoffmenge n konstant", 20, GREY_A).next_to(
             title, DOWN, buff=0.1
         )
         self.add_fixed_in_frame_mobjects(title, condition)
@@ -1486,7 +1556,7 @@ class Chapter6(ThreeDScene):
                 fill_opacity=0.85,
                 stroke_color=YELLOW,
             ).move_to([center_x, -2.05, 0]),
-            _text("ISITICI", 16, BLACK).move_to([center_x, -2.05, 0]),
+            _text("HEIZER", 16, BLACK).move_to([center_x, -2.05, 0]),
         )
         heater_arrows = VGroup(
             *[
@@ -1501,15 +1571,15 @@ class Chapter6(ThreeDScene):
                 for offset in (-0.45, 0, 0.45)
             ]
         )
-        phase = _text("ÖNCE — 3 s ölçüm", 18, GREEN_A).move_to([-5.25, 2.15, 0])
-        counter_heading = _text("Piston çarpması", 18, WHITE).move_to(
+        phase = _text("VORHER: 3 s Messung", 18, GREEN_A).move_to([-5.25, 2.15, 0])
+        counter_heading = _text("Stöße am Kolben", 18, WHITE).move_to(
             [-5.25, 1.55, 0]
         )
         counter = _text("0", 34, YELLOW).move_to([-5.25, 0.95, 0])
-        counter_note = _text("Aynı süre", 15, GREY_A).next_to(counter, DOWN, buff=0.08)
-        formula = _text("P / T = sabit", 30, YELLOW).move_to([3.35, 1.25, 0])
+        counter_note = _text("Gleiche Dauer", 15, GREY_A).next_to(counter, DOWN, buff=0.08)
+        formula = _text("p / T = konstant", 30, YELLOW).move_to([3.35, 1.25, 0])
         explanation = _text(
-            "V ve n sabit\nT (Kelvin) artar → P artar",
+            "V und n konstant\nT (Kelvin) steigt → p steigt",
             20,
             WHITE,
         ).move_to([3.35, 0.25, 0])
@@ -1549,16 +1619,15 @@ class Chapter6(ThreeDScene):
         self.remove(title, condition)
         card, correct = _prediction_prompt(
             self,
-            "Hacim sabitken gazı ısıtırsam basınç ne olur?",
-            "ARTAR",
+            "Gas bei konstantem Volumen erwärmen: Was passiert mit dem Druck?",
+            "NIMMT ZU",
             choice_buff=0.4,
             labeled_choices=True,
         )
         hot_temperature = 450
-        correct.set_color(GREEN)
-        self.play(Indicate(correct, color=GREEN, scale_factor=1.12), run_time=0.8)
+        # Frage ausblenden, ohne die Lösung vorwegzunehmen; sie wird erst nach dem Versuch aufgelöst.
+        self.play(FadeOut(card), run_time=0.4)
         self.remove_fixed_in_frame_mobjects(card)
-        self.remove(card)
 
         self.play(
             FadeOut(phase),
@@ -1591,7 +1660,8 @@ class Chapter6(ThreeDScene):
 
         mola = gas[0]
         mola_start = positions[0].copy()
-        hot_velocity = velocities[0] * np.sqrt(hot_temperature / 300)
+        speed_factor = np.sqrt(hot_temperature / 300)  # v ~ √T
+        hot_velocity = velocities[0] * speed_factor
         closeup_duration = 2.4
         closeup_paths, _, closeup_events, _, _ = _simulate_gas_paths(
             mola_start.reshape(1, 3),
@@ -1629,14 +1699,16 @@ class Chapter6(ThreeDScene):
         dim_others = [molecule.animate.set_opacity(0.12) for molecule in gas[1:]]
         self.play(*dim_others, run_time=1.1)
         self.move_camera(zoom=2.2, frame_center=mola_start, run_time=1.1)
-        heat_caption = _text("ISI GAZA AKTARILIYOR", 22, ORANGE).to_corner(
+        heat_caption = _text("WÄRME WIRD AUF DAS GAS ÜBERTRAGEN", 22, ORANGE).to_corner(
             UL, buff=0.35
         )
-        energy_label = _text("Mola'nın kinetik enerjisi", 17, WHITE).move_to(
+        # Temperatur ist eine Eigenschaft des ganzen Gases, nicht eines einzelnen Moleküls.
+        # Der Balken zeigt deshalb die mittlere kinetische Energie, die proportional zu T ist.
+        energy_label = _text("Mittlere kinetische Energie", 17, WHITE).move_to(
             [3.8, 1.0, 0]
         )
         energy_before = _text("300 K", 17, BLUE_A).move_to([3.8, 0.58, 0])
-        energy_after = _text("450 K", 17, ORANGE).move_to([3.8, -0.55, 0])
+        energy_after = _text(f"{hot_temperature} K", 17, ORANGE).move_to([3.8, -0.55, 0])
         energy_outline = RoundedRectangle(
             width=2.1,
             height=0.34,
@@ -1645,15 +1717,18 @@ class Chapter6(ThreeDScene):
             stroke_width=1.5,
             fill_opacity=0,
         ).move_to([3.8, 0, 0])
+        bar_left = 2.84
+        cold_bar_width = 0.68
+        hot_bar_width = cold_bar_width * hot_temperature / 300  # <E_kin> ~ T
         energy_fill = Rectangle(
-            width=0.68,
+            width=cold_bar_width,
             height=0.23,
             stroke_width=0,
             fill_color=BLUE_C,
             fill_opacity=0.95,
-        ).move_to([3.18, 0, 0])
+        ).move_to([bar_left + cold_bar_width / 2, 0, 0])
         heat_note = _text(
-            "Isıtıcıdan alınan enerji\nortalama kinetik enerjiyi artırır.",
+            "Die Energie vom Heizer erhöht\ndie mittlere kinetische Energie.",
             17,
             WHITE,
         ).move_to([3.8, -1.15, 0])
@@ -1692,16 +1767,17 @@ class Chapter6(ThreeDScene):
                 packet.animate.move_to(start + DOWN * 0.12)
                 for packet in incoming_heat
             ],
-            energy_fill.animate.set_color(ORANGE).stretch_to_fit_width(1.38).move_to(
-                [3.45, 0, 0]
+            energy_fill.animate.set_color(ORANGE).stretch_to_fit_width(hot_bar_width).move_to(
+                [bar_left + hot_bar_width / 2, 0, 0]
             ),
             run_time=1.0,
             rate_func=linear,
         )
         self.play(FadeOut(incoming_heat), run_time=0.2)
+        arrow_length = 0.6
         speed_before = Arrow(
             start,
-            start + velocities[0] / np.linalg.norm(velocities[0]) * 0.42,
+            start + velocities[0] / np.linalg.norm(velocities[0]) * arrow_length,
             buff=0,
             color=BLUE_A,
             stroke_width=5,
@@ -1709,13 +1785,13 @@ class Chapter6(ThreeDScene):
         )
         speed_after = Arrow(
             start,
-            start + hot_velocity / np.linalg.norm(hot_velocity) * 1.05,
+            start + hot_velocity / np.linalg.norm(hot_velocity) * arrow_length * speed_factor,
             buff=0,
             color=ORANGE,
             stroke_width=6,
-            max_tip_length_to_length_ratio=0.25,
+            max_tip_length_to_length_ratio=0.3,
         )
-        speed_note = _text("Hız vektörü uzar", 16, ORANGE).move_to(
+        speed_note = _text("Geschwindigkeitspfeil wird länger", 16, ORANGE).move_to(
             [3.8, -1.72, 0]
         )
         self.add(speed_before)
@@ -1772,21 +1848,33 @@ class Chapter6(ThreeDScene):
         hot_label = _text(f"T: {hot_temperature} K", 20, ORANGE).move_to(
             temperature.get_center()
         )
-        self.add_fixed_in_frame_mobjects(hot_label)
-        self.play(FadeIn(phase), FadeIn(counter_heading), FadeIn(counter), FadeIn(counter_note), FadeIn(formula), FadeIn(explanation), FadeIn(hot_label), run_time=0.5)
+        # Die Anzeigen wieder im Bild fixieren, bevor sie eingeblendet werden.
+        self.add_fixed_in_frame_mobjects(
+            phase, counter_heading, counter, counter_note, formula, explanation, hot_label
+        )
+        self.play(
+            FadeIn(phase),
+            FadeIn(counter_heading),
+            FadeIn(counter),
+            FadeIn(counter_note),
+            FadeIn(formula),
+            FadeIn(explanation),
+            FadeIn(hot_label),
+            run_time=0.5,
+        )
         self.play(
             *[molecule.animate.set_color(ORANGE) for molecule in gas],
             run_time=0.45,
         )
         phase.become(
-            _text("SONRA — 3 s ölçüm", 18, ORANGE).move_to(phase.get_center())
+            _text("NACHHER: 3 s Messung", 18, ORANGE).move_to(phase.get_center())
         )
 
         positions, velocities, after_hits = _play_gas_measurement(
             self,
             gas,
             positions,
-            velocities * np.sqrt(hot_temperature / 300),
+            velocities * speed_factor,
             duration=observation_time,
             radius=inner_radius,
             lower=inner_lower,
@@ -1797,15 +1885,18 @@ class Chapter6(ThreeDScene):
             seed=607,
         )
         result = _text(
-            f"Aynı sürede piston çarpması: {before_hits} → {after_hits}. "
-            "Moleküller daha hızlı ve daha sert çarpar.",
+            f"Stöße am Kolben in gleicher Zeit: {before_hits} → {after_hits}. "
+            "Die Moleküle treffen öfter und härter.",
             18,
             WHITE,
         )
+        # Erst jetzt die Frage wieder zeigen und auflösen.
+        self.add_fixed_in_frame_mobjects(card)
+        self.play(FadeIn(card), run_time=0.4)
         _close_prediction(self, card, correct, result)
         self.add_fixed_in_frame_mobjects(title, condition)
         self.play(FadeIn(title), FadeIn(condition), run_time=0.5)
-        summary = _text("V ve n sabit  →  T artarsa P artar", 23, YELLOW).to_edge(
+        summary = _text("V und n konstant  →  T steigt, also steigt p", 23, YELLOW).to_edge(
             DOWN, buff=0.55
         )
         self.add_fixed_in_frame_mobjects(summary)
@@ -1814,14 +1905,16 @@ class Chapter6(ThreeDScene):
 
 
 class Chapter7(ThreeDScene):
-    """Bölüm 7 — Charles yasası: basınç ve mol sayısı sabit."""
+    """Kapitel 7: Gesetz von Gay-Lussac (isobar): Druck und Stoffmenge konstant."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("CHARLES YASASI", 34, BLUE_A).to_edge(UP, buff=0.3)
-        condition = _text("Basınç P ve mol sayısı n sabit", 20, GREY_A).next_to(
+        # Im Deutschen heißt V ~ T bei konstantem p "Gesetz von Gay-Lussac"
+        # (im Englischen und Türkischen "Gesetz von Charles").
+        title = _text("GESETZ VON GAY-LUSSAC", 34, BLUE_A).to_edge(UP, buff=0.3)
+        condition = _text("isobar: Druck p und Stoffmenge n konstant", 20, GREY_A).next_to(
             title, DOWN, buff=0.1
         )
         self.add_fixed_in_frame_mobjects(title, condition)
@@ -1850,15 +1943,15 @@ class Chapter7(ThreeDScene):
             run_time=1.2,
         )
 
-        phase = _text("ÖNCE — 3 s ölçüm", 18, GREEN_A).move_to([-5.25, 2.15, 0])
-        counter_heading = _text("Piston çarpması", 18, WHITE).move_to(
+        phase = _text("VORHER: 3 s Messung", 18, GREEN_A).move_to([-5.25, 2.15, 0])
+        counter_heading = _text("Stöße am Kolben", 18, WHITE).move_to(
             [-5.25, 1.55, 0]
         )
         counter = _text("0", 34, YELLOW).move_to([-5.25, 0.95, 0])
-        counter_note = _text("Aynı süre", 15, GREY_A).next_to(counter, DOWN, buff=0.08)
-        formula = _text("V / T = sabit", 30, YELLOW).move_to([3.35, 1.25, 0])
+        counter_note = _text("Gleiche Dauer", 15, GREY_A).next_to(counter, DOWN, buff=0.08)
+        formula = _text("V / T = konstant", 30, YELLOW).move_to([3.35, 1.25, 0])
         weight_note = _text(
-            "Üstteki ağırlık hep aynı,\nbu yüzden içerideki basınç da aynı kalıyor.",
+            "Das Gewicht oben bleibt immer gleich,\ndeshalb bleibt auch der Druck innen gleich.",
             18,
             WHITE,
         ).move_to([3.35, 0.2, 0])
@@ -1899,8 +1992,8 @@ class Chapter7(ThreeDScene):
         self.remove(title, condition)
         card, correct = _prediction_prompt(
             self,
-            "Aynı ağırlık altındaki gazı ısıtırsam piston ne yapar?",
-            "ARTAR",
+            "Gas unter demselben Gewicht erwärmen: Was passiert mit dem Volumen?",
+            "NIMMT ZU",
             choice_buff=0.4,
             labeled_choices=True,
         )
@@ -1912,14 +2005,14 @@ class Chapter7(ThreeDScene):
         self.remove_fixed_in_frame_mobjects(temperature)
         self.remove(temperature)
         counter_note.become(
-            _text("Isıtma sırasında", 15, GREY_A).move_to(counter_note.get_center())
+            _text("Während des Erwärmens", 15, GREY_A).move_to(counter_note.get_center())
         )
         self.play(
             *[molecule.animate.set_color(ORANGE) for molecule in gas],
             run_time=0.45,
         )
         phase.become(
-            _text("PİSTON YÜKSELİYOR", 18, ORANGE).move_to(phase.get_center())
+            _text("KOLBEN STEIGT", 18, ORANGE).move_to(phase.get_center())
         )
 
         positions, velocities, _ = _play_gas_measurement(
@@ -1936,23 +2029,26 @@ class Chapter7(ThreeDScene):
             counter=counter,
             moving_objects=[piston, weight],
             seed=708,
+            # Beim Ausdehnen verrichtet das Gas Arbeit und würde abkühlen; der Heizer
+            # ersetzt diese Energie, damit T bei 600 K bleibt.
+            thermostat=True,
         )
-        phase.become(_text("SONRA — V arttı", 18, GREEN_A).move_to(phase.get_center()))
-        volume_note = _text("Piston yükselir → V artar", 19, GREEN_A).move_to(
+        phase.become(_text("NACHHER: V ist größer", 18, GREEN_A).move_to(phase.get_center()))
+        volume_note = _text("Kolben steigt → V nimmt zu", 19, GREEN_A).move_to(
             [3.35, -1.45, 0]
         )
         self.add_fixed_in_frame_mobjects(volume_note)
         self.play(FadeIn(volume_note), run_time=0.5)
         result = _text(
-            "Ağırlık aynı kaldı: basınç sabit. "
-            "Gaz ısınınca piston yükseldi.",
+            "Das Gewicht blieb gleich: Druck konstant. "
+            "Beim Erwärmen ist der Kolben gestiegen.",
             18,
             WHITE,
         )
         _close_prediction(self, card, correct, result)
         self.add_fixed_in_frame_mobjects(title, condition)
         self.play(FadeIn(title), FadeIn(condition), run_time=0.5)
-        summary = _text("P ve n sabit  →  T artarsa V artar", 23, YELLOW).to_edge(
+        summary = _text("p und n konstant  →  T steigt, also steigt V", 23, YELLOW).to_edge(
             DOWN, buff=0.55
         )
         self.add_fixed_in_frame_mobjects(summary)
@@ -1961,16 +2057,16 @@ class Chapter7(ThreeDScene):
 
 
 class Chapter8(ThreeDScene):
-    """Bölüm 8 — sıcaklık ve hacim sabitken mol sayısının etkisi."""
+    """Kapitel 8: Einfluss der Stoffmenge bei konstanter Temperatur und konstantem Volumen."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("MADDE MİKTARI VE BASINÇ", 34, BLUE_A).to_edge(
+        title = _text("STOFFMENGE UND DRUCK", 34, BLUE_A).to_edge(
             UP, buff=0.3
         )
-        condition = _text("Sıcaklık T ve hacim V sabit", 20, GREY_A).next_to(
+        condition = _text("Temperatur T und Volumen V konstant", 20, GREY_A).next_to(
             title, DOWN, buff=0.1
         )
         self.add_fixed_in_frame_mobjects(title, condition)
@@ -1988,35 +2084,37 @@ class Chapter8(ThreeDScene):
         gas = _gas_particles(positions, colors)
         self.play(Create(vessel), FadeIn(piston), FadeIn(gas), run_time=1.2)
 
-        phase = _text("ÖNCE — 3 s ölçüm", 18, GREEN_A).move_to([-5.25, 2.15, 0])
-        counter_heading = _text("Piston çarpması", 18, WHITE).move_to(
+        phase = _text("VORHER: 3 s Messung", 18, GREEN_A).move_to([-5.25, 2.15, 0])
+        counter_heading = _text("Stöße am Kolben", 18, WHITE).move_to(
             [-5.25, 1.55, 0]
         )
         counter = _text("0", 34, YELLOW).move_to([-5.25, 0.95, 0])
-        counter_note = _text("Aynı süre", 15, GREY_A).next_to(counter, DOWN, buff=0.08)
-        formula = MathTex(r"N = n \times N_A", font_size=34, color=YELLOW).move_to(
-            [3.35, 1.35, 0]
-        )
+        counter_note = _text("Gleiche Dauer", 15, GREY_A).next_to(counter, DOWN, buff=0.08)
+        # MarkupText statt MathTex: braucht kein LaTeX (MiKTeX) auf dem Rechner.
+        formula = MarkupText(
+            "<i>N</i> = <i>n</i> × <i>N</i><sub>A</sub>", font=FONT, font_size=34, color=YELLOW
+        ).move_to([3.35, 1.35, 0])
         symbol_definitions = _text(
-            "N: toplam tanecik sayısı\nn: madde miktarı (mol)",
+            "N: Gesamtzahl der Teilchen\nn: Stoffmenge (mol)",
             15,
             WHITE,
         ).move_to([3.35, 0.55, 0])
-        avogadro = MathTex(
-            r"N_A = 6{,}022 \times 10^{23}\ \mathrm{mol}^{-1}",
+        avogadro = MarkupText(
+            "<i>N</i><sub>A</sub> = 6,022 × 10<sup>23</sup> mol<sup>−1</sup>",
+            font=FONT,
             font_size=23,
             color=WHITE,
         ).move_to([3.35, -0.15, 0])
         avogadro_note = _text(
-            "Avogadro sabiti: 1 moldaki tanecik sayısı",
+            "Avogadro-Konstante: Anzahl der Teilchen in 1 mol",
             14,
             GREY_A,
         ).move_to([3.35, -0.62, 0])
-        relation = _text("T ve V sabit → n artarsa P artar", 18, GREEN_A).move_to(
+        relation = _text("T und V konstant → n steigt, also steigt p", 18, GREEN_A).move_to(
             [3.35, -1.1, 0]
         )
         model_note = _text(
-            "Her nokta çok sayıda molekülü temsil eder.",
+            "Jeder Punkt steht für sehr viele Moleküle.",
             16,
             GREY_A,
         ).move_to([3.35, -1.55, 0])
@@ -2067,8 +2165,8 @@ class Chapter8(ThreeDScene):
         self.remove(title, condition)
         card, correct = _prediction_prompt(
             self,
-            "T ve V sabitken kaba daha fazla gaz eklersem basınç ne olur?",
-            "ARTAR",
+            "T und V konstant, mehr Gas hinein: Was passiert mit dem Druck?",
+            "NIMMT ZU",
             choice_buff=0.4,
             labeled_choices=True,
         )
@@ -2078,10 +2176,12 @@ class Chapter8(ThreeDScene):
         )
         added_colors = [GREEN_C] * added_count
         added_gas = _gas_particles(added_positions, added_colors, radius=0.06)
+        # Ventil an der Seitenwand unterhalb des Kolbens (vorher lag es über dem Kolben,
+        # die Teilchen wären also durch den Kolben hindurch ins Gas geflogen).
         valve = Circle(radius=0.16, color=GREEN_A, stroke_width=3).move_to(
-            [center_x + 0.7, 1.65, 0]
+            [center_x + radius + 0.22, 0.2, 0]
         )
-        valve_label = _text("VANA AÇIK", 15, GREEN_A).next_to(valve, UP, buff=0.12)
+        valve_label = _text("VENTIL OFFEN", 15, GREEN_A).next_to(valve, RIGHT, buff=0.12)
         self.add_fixed_in_frame_mobjects(valve, valve_label)
         self.add(added_gas)
         for molecule in added_gas:
@@ -2108,7 +2208,7 @@ class Chapter8(ThreeDScene):
         velocities = np.vstack((velocities, added_velocities))
         self.play(FadeOut(valve_label), run_time=0.3)
         phase.become(
-            _text("SONRA — 3 s ölçüm", 18, GREEN_A).move_to(phase.get_center())
+            _text("NACHHER: 3 s Messung", 18, GREEN_A).move_to(phase.get_center())
         )
 
         positions, velocities, after_hits = _play_gas_measurement(
@@ -2128,15 +2228,15 @@ class Chapter8(ThreeDScene):
         self.remove_fixed_in_frame_mobjects(valve, valve_label)
         self.play(FadeOut(valve), run_time=0.35)
         result = _text(
-            f"Aynı sürede çarpma sayısı: {before_hits} → {after_hits}. "
-            "Molekül sayısı artınca basınç yükselir.",
+            f"Stöße in gleicher Zeit: {before_hits} → {after_hits}. "
+            "Mehr Moleküle, höherer Druck.",
             18,
             WHITE,
         )
         _close_prediction(self, card, correct, result)
         self.add_fixed_in_frame_mobjects(title, condition)
         self.play(FadeIn(title), FadeIn(condition), run_time=0.5)
-        summary = _text("T ve V sabit  →  n artarsa P artar", 23, YELLOW).to_edge(
+        summary = _text("T und V konstant  →  n steigt, also steigt p", 23, YELLOW).to_edge(
             DOWN, buff=0.55
         )
         self.add_fixed_in_frame_mobjects(summary)
@@ -2144,40 +2244,96 @@ class Chapter8(ThreeDScene):
         self.wait(3)
 
 
+# ---------------------------------------------------------------------------
+# Formeln ohne LaTeX: MarkupText-Bausteine (funktioniert ohne MiKTeX)
+# ---------------------------------------------------------------------------
+
+
+def _frac(numerator, denominator, size: float = 32, color=WHITE) -> VGroup:
+    """Bruch aus zwei Markup-Strings (oder Mobjects) mit Bruchstrich."""
+    parts = []
+    for part in (numerator, denominator):
+        if isinstance(part, str):
+            part = MarkupText(part, font=FONT, font_size=size * 0.82, color=color)
+        parts.append(part)
+    top, bottom = parts
+    bar = Line(LEFT, RIGHT, color=color, stroke_width=2)
+    bar.set_width(max(top.width, bottom.width) + 0.12)
+    fraction = VGroup(top, bar, bottom).arrange(DOWN, buff=0.07)
+    fraction.anchor = bar
+    return fraction
+
+
+def _sum_symbol(upper: str, lower: str, size: float = 32, color=WHITE) -> VGroup:
+    sigma = MarkupText("Σ", font=FONT, font_size=size * 1.35, color=color)
+    group = VGroup(
+        MarkupText(upper, font=FONT, font_size=size * 0.55, color=color),
+        sigma,
+        MarkupText(lower, font=FONT, font_size=size * 0.55, color=color),
+    ).arrange(DOWN, buff=0.04)
+    group.anchor = sigma
+    return group
+
+
+def _braced(term: Mobject, label: str, size: float = 32, color=WHITE) -> VGroup:
+    brace = Brace(term, DOWN, buff=0.06, color=color)
+    text = MarkupText(label, font=FONT, font_size=size * 0.6, color=color).next_to(
+        brace, DOWN, buff=0.04
+    )
+    group = VGroup(term, brace, text)
+    group.anchor = getattr(term, "anchor", term)
+    return group
+
+
+def _math(*parts, size: float = 32, color=WHITE, buff: float = 0.1) -> VGroup:
+    """Formel aus Markup-Strings und fertigen Bausteinen, auf einer Mittellinie ausgerichtet."""
+    group = VGroup()
+    for part in parts:
+        if isinstance(part, str):
+            part = MarkupText(part, font=FONT, font_size=size, color=color)
+        group.add(part)
+    group.arrange(RIGHT, buff=buff)
+    reference_y = group[0].get_center()[1] if not hasattr(group[0], "anchor") else group[0].anchor.get_center()[1]
+    for part in group:
+        anchor = getattr(part, "anchor", part)
+        part.shift(UP * (reference_y - anchor.get_center()[1]))
+    return group
+
+
 class Chapter9(ThreeDScene):
-    """Bölüm 9 — gaz yasalarından ideal gaz denklemine."""
+    """Kapitel 9: Von den Gasgesetzen zur Zustandsgleichung des idealen Gases."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("GAZ YASALARINDAN TEK FORMÜLE", 31, BLUE_A).to_edge(UP, buff=0.3)
+        title = _text("VON DEN GASGESETZEN ZU EINER FORMEL", 31, BLUE_A).to_edge(UP, buff=0.3)
         self.add_fixed_in_frame_mobjects(title)
         self.play(FadeIn(title), run_time=0.8)
 
-        formula = MathTex("PV", "=", "nRT", font_size=47)
+        formula = _math("pV", "=", "nRT", size=47)
         formula[0].set_color(BLUE_A)
         formula[2].set_color(YELLOW)
         formula.to_edge(UP, buff=0.85)
         self.add_fixed_in_frame_mobjects(formula)
         self.play(FadeIn(formula, scale=0.75), run_time=0.7)
-        glossary_title = _text("Semboller ne anlama geliyor?", 24, WHITE).move_to(
+        glossary_title = _text("Was bedeuten die Symbole?", 24, WHITE).move_to(
             UP * 1.55
         )
         self.add_fixed_in_frame_mobjects(glossary_title)
         self.play(FadeIn(glossary_title), run_time=0.5)
 
         definitions = [
-            (r"P", "Basınç", "Pa"),
-            (r"V", "Hacim", "m³"),
-            (r"n", "Madde miktarı", "mol"),
-            (r"R", "Evrensel gaz sabiti", "J/(mol·K)"),
-            (r"T", "Mutlak sıcaklık", "K"),
+            ("p", "Druck", "Pa"),
+            ("V", "Volumen", "m³"),
+            ("n", "Stoffmenge", "mol"),
+            ("R", "Universelle Gaskonstante", "J/(mol·K)"),
+            ("T", "Absolute Temperatur", "K"),
         ]
         definition_groups = VGroup()
         for symbol, meaning, unit in definitions:
             row = VGroup(
-                MathTex(symbol, font_size=31, color=TEAL_A),
+                _math(symbol, size=31, color=TEAL_A),
                 _text(f": {meaning}  [{unit}]", 20, WHITE),
             ).arrange(RIGHT, buff=0.12, aligned_edge=DOWN)
             definition_groups.add(row)
@@ -2198,7 +2354,7 @@ class Chapter9(ThreeDScene):
         self.wait(3)
 
         micro_title = _text(
-            "1. Basınç molekül çarpışmalarından nasıl çıkar?",
+            "1. Wie entsteht der Druck aus Molekülstößen?",
             25,
             BLUE_A,
         ).move_to(UP * 2.45)
@@ -2228,7 +2384,7 @@ class Chapter9(ThreeDScene):
             buff=0.12,
             max_tip_length_to_length_ratio=0.2,
         )
-        box_label = _text("Küp kap: kenar L", 17, GREY_A).next_to(box, DOWN, buff=0.18)
+        box_label = _text("Würfel mit Kantenlänge L", 17, GREY_A).next_to(box, DOWN, buff=0.18)
         self.add_fixed_in_frame_mobjects(box, wall_left, wall_right, molecule, vx_arrow, box_label)
         self.play(Create(box), FadeIn(wall_left), FadeIn(wall_right), FadeIn(molecule), GrowArrow(vx_arrow), FadeIn(box_label), run_time=1)
         self.play(molecule.animate.move_to(box.get_right() + LEFT * 0.18), run_time=0.7, rate_func=linear)
@@ -2238,15 +2394,23 @@ class Chapter9(ThreeDScene):
             run_time=0.8,
             rate_func=linear,
         )
+        # Impuls als m·v geschrieben, damit er nicht mit dem Druck p verwechselt wird.
         collision_math = VGroup(
-            MathTex(r"\Delta p_x = 2m|v_x|", font_size=32, color=YELLOW),
-            MathTex(r"\Delta t = \frac{2L}{|v_x|}", font_size=32, color=TEAL_A),
-            MathTex(r"F_x = \frac{\Delta p_x}{\Delta t} = \frac{m v_x^2}{L}", font_size=32, color=WHITE),
+            _math("Δ(m v<sub>x</sub>) = 2m |v<sub>x</sub>|", size=32, color=YELLOW),
+            _math("Δt =", _frac("2L", "|v<sub>x</sub>|", 32, TEAL_A), size=32, color=TEAL_A),
+            _math(
+                "F<sub>x</sub> =",
+                _frac("Δ(m v<sub>x</sub>)", "Δt", 32, WHITE),
+                "=",
+                _frac("m v<sub>x</sub><sup>2</sup>", "L", 32, WHITE),
+                size=32,
+                color=WHITE,
+            ),
         ).arrange(DOWN, aligned_edge=LEFT, buff=0.35).move_to(RIGHT * 2.45 + UP * 0.15)
         collision_note = _text(
-            "Geri sekerken momentum yön değiştirir.\n"
-            "Kuvvet = momentum değişimi / geçen süre.\n"
-            "m: molekül kütlesi • L: kutu kenarı • x yönü: hız bileşeni.",
+            "Beim Abprallen kehrt sich der Impuls um.\n"
+            "Kraft = Impulsänderung / vergangene Zeit.\n"
+            "m: Masse des Moleküls • L: Kantenlänge • v_x: Geschwindigkeit in x-Richtung",
             17,
             GREY_A,
         ).move_to(RIGHT * 2.45 + DOWN * 1.6)
@@ -2259,26 +2423,29 @@ class Chapter9(ThreeDScene):
         self.wait(3)
 
         pressure_title = _text(
-            "2. Üç yöndeki hareketi hesaba kat",
+            "2. Die Bewegung in alle drei Richtungen berücksichtigen",
             25,
             BLUE_A,
         ).move_to(UP * 2.45)
         pressure_steps = VGroup(
-            MathTex(r"P = \frac{F}{A}", font_size=36, color=WHITE),
-            MathTex(r"PV = N m\langle v_x^2\rangle", font_size=36, color=TEAL_A),
-            MathTex(
-                r"\langle v_x^2\rangle = \frac{\langle v^2\rangle}{3}",
-                font_size=34,
+            _math("p =", _frac("F", "A", 36, WHITE), size=36, color=WHITE),
+            _math("pV = N m &lt;v<sub>x</sub><sup>2</sup>&gt;", size=36, color=TEAL_A),
+            _math(
+                "&lt;v<sub>x</sub><sup>2</sup>&gt; =",
+                _frac("&lt;v<sup>2</sup>&gt;", "3", 34, YELLOW),
+                size=34,
                 color=YELLOW,
             ),
-            MathTex(
-                r"PV = \frac{1}{3}N m\langle v^2\rangle",
-                font_size=39,
+            _math(
+                "pV =",
+                _frac("1", "3", 39, WHITE),
+                "N m &lt;v<sup>2</sup>&gt;",
+                size=39,
                 color=WHITE,
             ),
         ).arrange(DOWN, buff=0.32).move_to(DOWN * 0.1)
         isotropy_note = _text(
-            "P: basınç  •  A: duvar alanı  •  V = AL",
+            "p: Druck  •  A: Wandfläche  •  V = A·L",
             18,
             GREY_A,
         ).to_edge(DOWN, buff=0.42)
@@ -2307,29 +2474,35 @@ class Chapter9(ThreeDScene):
         self.wait(2)
 
         energy_title = _text(
-            "3. Toplam öteleme kinetik enerjisi",
+            "3. Gesamte kinetische Energie der Translation",
             25,
             BLUE_A,
         ).move_to(UP * 2.45)
-        kinetic_definition = MathTex(
-            r"U_{\mathrm{kin}} = \sum_{i=1}^{N}\frac{1}{2}m v_i^2"
-            r" = \frac{1}{2}N m\langle v^2\rangle",
-            font_size=32,
+        kinetic_definition = _math(
+            "U<sub>kin</sub> =",
+            _sum_symbol("N", "i=1", 32, YELLOW),
+            _frac("1", "2", 32, YELLOW),
+            "m v<sub>i</sub><sup>2</sup> =",
+            _frac("1", "2", 32, YELLOW),
+            "N m &lt;v<sup>2</sup>&gt;",
+            size=32,
             color=YELLOW,
         ).move_to(UP * 0.75)
         kinetic_explanation = _text(
-            "Bir taneciğin öteleme kinetik enerjisi ½mv²'dir.\n"
-            "Bütün taneciklerin bu enerjilerini topluyoruz.",
+            "Ein Teilchen hat die Translationsenergie ½mv².\n"
+            "Wir addieren diese Energien über alle Teilchen.",
             20,
             WHITE,
         ).move_to(DOWN * 0.3)
-        two_thirds = MathTex(
-            r"PV = \frac{2}{3}U_{\mathrm{kin}}",
-            font_size=43,
+        two_thirds = _math(
+            "pV =",
+            _frac("2", "3", 43, TEAL_A),
+            "U<sub>kin</sub>",
+            size=43,
             color=TEAL_A,
         ).move_to(DOWN * 1.45)
         coefficient_note = _text(
-            "2/3 = (1/3) ÷ (1/2): 1/3 üç yönden, 1/2 enerji tanımından gelir.",
+            "2/3 = (1/3) : (1/2): 1/3 kommt von den drei Richtungen, 1/2 aus der Definition der Energie.",
             17,
             GREY_A,
         ).to_edge(DOWN, buff=0.3)
@@ -2350,40 +2523,49 @@ class Chapter9(ThreeDScene):
         self.wait(3)
 
         thermal_title = _text(
-            "4. Sıcaklık, ortalama kinetik enerjiyle bağlantılıdır",
+            "4. Die Temperatur hängt mit der mittleren kinetischen Energie zusammen",
             24,
             BLUE_A,
         ).move_to(UP * 2.45)
-        equipartition = MathTex(
-            r"\langle E_{\mathrm{kin}}\rangle"
-            r" = \underbrace{\frac{1}{2}k_B T}_{x}"
-            r" + \underbrace{\frac{1}{2}k_B T}_{y}"
-            r" + \underbrace{\frac{1}{2}k_B T}_{z}"
-            r" = \frac{3}{2}k_B T",
-            font_size=32,
+
+        def half_kt() -> VGroup:
+            return _math(_frac("1", "2", 32, YELLOW), "k<sub>B</sub>T", size=32, color=YELLOW, buff=0.06)
+
+        equipartition = _math(
+            "&lt;E<sub>kin</sub>&gt; =",
+            _braced(half_kt(), "x", 32, YELLOW),
+            "+",
+            _braced(half_kt(), "y", 32, YELLOW),
+            "+",
+            _braced(half_kt(), "z", 32, YELLOW),
+            "=",
+            _frac("3", "2", 32, YELLOW),
+            "k<sub>B</sub>T",
+            size=32,
             color=YELLOW,
         ).move_to(UP * 0.75)
         equipartition_note = _text(
-            "Eşbölüşüm teoremi: dengede, her bağımsız hareket yönü\n"
-            "ortalama aynı miktarda enerji taşır.",
+            "Gleichverteilungssatz: Im Gleichgewicht trägt jede unabhängige\n"
+            "Bewegungsrichtung im Mittel gleich viel Energie.",
             20,
             WHITE,
         ).move_to(DOWN * 0.35)
-        total_kinetic = MathTex(
-            r"U_{\mathrm{kin}} = N\langle E_{\mathrm{kin}}\rangle"
-            r" = \frac{3}{2}N k_B T",
-            font_size=35,
+        total_kinetic = _math(
+            "U<sub>kin</sub> = N &lt;E<sub>kin</sub>&gt; =",
+            _frac("3", "2", 35, TEAL_A),
+            "N k<sub>B</sub>T",
+            size=35,
             color=TEAL_A,
         ).move_to(DOWN * 1.35)
         boltzmann = VGroup(
-            MathTex(r"k_B = 1{,}380649\times10^{-23}\ \mathrm{J/K}", font_size=27, color=GREEN_A),
+            _math("k<sub>B</sub> = 1,380649 × 10<sup>−23</sup> J/K", size=27, color=GREEN_A),
             _text(
-                "Boltzmann sabiti, sıcaklığı tanecik başına enerji ölçeğine bağlar.",
+                "Die Boltzmann-Konstante verknüpft die Temperatur mit der Energie pro Teilchen.",
                 17,
                 GREY_A,
             ),
             _text(
-                "Deneysel olarak belirlenmiştir; bugün SI'da değeri tam sabittir.",
+                "Sie wurde experimentell bestimmt; heute ist ihr Wert im SI exakt festgelegt.",
                 16,
                 GREY_A,
             ),
@@ -2407,40 +2589,37 @@ class Chapter9(ThreeDScene):
         self.wait(4)
 
         assemble_title = _text(
-            "5. Birleştir: parçacık sayısından mol sayısına",
+            "5. Zusammensetzen: von der Teilchenzahl zur Stoffmenge",
             24,
             BLUE_A,
         ).move_to(UP * 2.45)
-        assembly_equation = MathTex(
-            r"PV = \frac{2}{3}U_{\mathrm{kin}}"
-            r" = \frac{2}{3}\left(\frac{3}{2}N k_B T\right)",
-            font_size=31,
+        assembly_equation = _math(
+            "pV =",
+            _frac("2", "3", 31, WHITE),
+            "U<sub>kin</sub> =",
+            _frac("2", "3", 31, WHITE),
+            "(",
+            _frac("3", "2", 31, WHITE),
+            "N k<sub>B</sub>T )",
+            size=31,
             color=WHITE,
         ).move_to(UP * 0.9)
         molecule_definitions = VGroup(
             VGroup(
-                MathTex(r"N", font_size=25, color=TEAL_A),
-                _text(": toplam tanecik sayısı", 17, WHITE),
+                _math("N", size=25, color=TEAL_A),
+                _text(": Gesamtzahl der Teilchen", 17, WHITE),
             ).arrange(RIGHT, buff=0.08),
             VGroup(
-                MathTex(r"N_A", font_size=25, color=TEAL_A),
-                MathTex(
-                    r": \approx 6{,}022\times10^{23}\ \mathrm{mol}^{-1}",
-                    font_size=17,
-                    color=WHITE,
-                ),
+                _math("N<sub>A</sub>", size=25, color=TEAL_A),
+                _math(": ≈ 6,022 × 10<sup>23</sup> mol<sup>−1</sup>", size=17, color=WHITE),
             ).arrange(RIGHT, buff=0.08),
             VGroup(
-                MathTex(r"n", font_size=25, color=TEAL_A),
-                _text(": madde miktarı (mol)", 17, WHITE),
+                _math("n", size=25, color=TEAL_A),
+                _text(": Stoffmenge (mol)", 17, WHITE),
             ).arrange(RIGHT, buff=0.08),
             VGroup(
-                MathTex(r"k_B", font_size=25, color=TEAL_A),
-                MathTex(
-                    r": 1{,}380649\times10^{-23}\ \mathrm{J/K}",
-                    font_size=17,
-                    color=WHITE,
-                ),
+                _math("k<sub>B</sub>", size=25, color=TEAL_A),
+                _math(": 1,380649 × 10<sup>−23</sup> J/K", size=17, color=WHITE),
             ).arrange(RIGHT, buff=0.08),
         ).arrange_in_grid(
             rows=2,
@@ -2449,29 +2628,26 @@ class Chapter9(ThreeDScene):
             cell_alignment=LEFT,
         ).move_to(DOWN * 1.45)
         cancellation_explanation = _text(
-            "2/3 ile 3/2 çarpımı 1 eder; katsayılar sadeleşir.",
+            "2/3 mal 3/2 ergibt 1; die Faktoren kürzen sich weg.",
             19,
             YELLOW,
         ).move_to(DOWN * 0.05)
-        r_equation = MathTex(
-            r"R = N_A k_B = 8{,}314\ \mathrm{J\,mol^{-1}\,K^{-1}}",
-            font_size=34,
+        r_equation = _math(
+            "R = N<sub>A</sub> k<sub>B</sub> = 8,314 J mol<sup>−1</sup> K<sup>−1</sup>",
+            size=34,
             color=GREEN_A,
         ).move_to(UP * 0.9)
-        r_units = MathTex(
-            r"\mathrm{mol}^{-1}\times\mathrm{J/K}"
-            r" = \mathrm{J\,mol^{-1}\,K^{-1}}",
-            font_size=28,
+        r_units = _math(
+            "mol<sup>−1</sup> × J/K = J mol<sup>−1</sup> K<sup>−1</sup>",
+            size=28,
             color=TEAL_A,
         ).move_to(DOWN * 0.05)
-        final_assembly = MathTex(r"PV = nRT", font_size=51, color=YELLOW).move_to(
-            UP * 0.65
-        )
+        final_assembly = _math("pV = nRT", size=51, color=YELLOW).move_to(UP * 0.65)
         r_explanation = _text(
-            "Bir moldaki taneciklerin enerji toplamı, mol başına R ölçeğini verir.",
+            "R ist die Boltzmann-Konstante, hochgerechnet auf ein Mol Teilchen.",
             18,
             WHITE,
-        ).move_to(DOWN * 0.35)
+        ).move_to(DOWN * 0.8)
         self.remove_fixed_in_frame_mobjects(
             equipartition, equipartition_note, total_kinetic, boltzmann
         )
@@ -2487,20 +2663,14 @@ class Chapter9(ThreeDScene):
             run_time=0.8,
         )
         self.wait(2)
-        gas_particle_equation = MathTex(
-            r"PV = N k_B T",
-            font_size=43,
-            color=YELLOW,
-        ).move_to(UP * 0.9)
+        gas_particle_equation = _math("pV = N k<sub>B</sub>T", size=43, color=YELLOW).move_to(UP * 0.9)
         self.play(
             Transform(assembly_equation, gas_particle_equation),
             FadeOut(cancellation_explanation),
             run_time=0.7,
         )
         self.wait(1.5)
-        amount_equation = MathTex(r"N = nN_A", font_size=43, color=TEAL_A).move_to(
-            UP * 1.0
-        )
+        amount_equation = _math("N = n N<sub>A</sub>", size=43, color=TEAL_A).move_to(UP * 1.0)
         self.add_fixed_in_frame_mobjects(molecule_definitions)
         self.play(
             Transform(assembly_equation, amount_equation),
@@ -2528,18 +2698,14 @@ class Chapter9(ThreeDScene):
         self.wait(3)
 
         kelvin_title = _text(
-            "T: mutlak sıcaklık, Kelvin ölçeğinde",
+            "T: absolute Temperatur in Kelvin",
             24,
             ORANGE,
         ).move_to(UP * 2.45)
-        kelvin_formula = MathTex(
-            r"T[\mathrm K] = t[^\circ\mathrm C] + 273{,}15",
-            font_size=39,
-            color=ORANGE,
-        ).move_to(UP * 0.65)
+        kelvin_formula = _math("T [K] = t [°C] + 273,15", size=39, color=ORANGE).move_to(UP * 0.65)
         absolute_zero = _text(
-            "Kelvin'in sıfır noktası mutlak sıfırdır:\n"
-            "0 K = −273,15 °C. Bu yüzden denkleme °C değil K yazılır.",
+            "Der Nullpunkt der Kelvin-Skala ist der absolute Nullpunkt:\n"
+            "0 K = −273,15 °C. Deshalb setzt man K ein, nicht °C.",
             20,
             WHITE,
         ).move_to(DOWN * 0.55)
@@ -2556,10 +2722,10 @@ class Chapter9(ThreeDScene):
         )
         self.wait(4)
 
-        law_title = _text("Üç özel durum: aynı denklem, farklı sabitler", 23, WHITE).move_to(
+        law_title = _text("Drei Spezialfälle: dieselbe Gleichung, andere Konstanten", 23, WHITE).move_to(
             UP * 2.85
         )
-        final_formula = MathTex("PV", "=", "nRT", font_size=43)
+        final_formula = _math("pV", "=", "nRT", size=43)
         final_formula[0].set_color(BLUE_A)
         final_formula[2].set_color(YELLOW)
         final_formula.move_to(UP * 2.0)
@@ -2573,14 +2739,15 @@ class Chapter9(ThreeDScene):
             run_time=0.8,
         )
 
+        # Deutsche Namen: p/T = konst. heißt Amontons, V/T = konst. heißt Gay-Lussac.
         law_specs = [
-            ("BOYLE", r"PV = \mathrm{sabit}", "T ve n sabit", BLUE_A),
-            ("GAY-LUSSAC", r"\frac{P}{T} = \mathrm{sabit}", "V ve n sabit", ORANGE),
-            ("CHARLES", r"\frac{V}{T} = \mathrm{sabit}", "P ve n sabit", GREEN_A),
+            ("BOYLE-MARIOTTE", lambda: _math("pV = konstant", size=29), "T und n konstant", BLUE_A),
+            ("AMONTONS", lambda: _math(_frac("p", "T", 29, WHITE), "= konstant", size=29), "V und n konstant", ORANGE),
+            ("GAY-LUSSAC", lambda: _math(_frac("V", "T", 29, WHITE), "= konstant", size=29), "p und n konstant", GREEN_A),
         ]
         law_cards = []
         targets = [LEFT * 4.45 + DOWN * 0.1, DOWN * 0.1, RIGHT * 4.45 + DOWN * 0.1]
-        for (name, equation, condition, color), target in zip(law_specs, targets):
+        for (name, make_equation, condition, color), target in zip(law_specs, targets):
             card_background = RoundedRectangle(
                 width=3.8,
                 height=1.75,
@@ -2590,9 +2757,9 @@ class Chapter9(ThreeDScene):
                 fill_color=BLACK,
                 fill_opacity=0.9,
             )
-            card_name = _text(name, 19, color).move_to(UP * 0.43)
-            card_formula = MathTex(equation, font_size=29, color=WHITE).move_to(ORIGIN)
-            card_condition = _text(condition, 15, GREY_A).move_to(DOWN * 0.48)
+            card_name = _text(name, 19, color).move_to(UP * 0.5)
+            card_formula = make_equation().move_to(DOWN * 0.02)
+            card_condition = _text(condition, 15, GREY_A).move_to(DOWN * 0.58)
             card = VGroup(card_background, card_name, card_formula, card_condition)
             card.move_to(DOWN * 1.2)
             self.add_fixed_in_frame_mobjects(card)
@@ -2602,12 +2769,12 @@ class Chapter9(ThreeDScene):
             self.wait(0.45)
 
         amount_relation = VGroup(
-            _text("Madde miktarı (ayrı ilişki):", 17, YELLOW),
-            MathTex(r"\frac{P}{n}=\mathrm{sabit}", font_size=25, color=YELLOW),
-            _text("T ve V sabit", 15, GREY_A),
+            _text("Stoffmenge (eigener Zusammenhang):", 17, YELLOW),
+            _math(_frac("p", "n", 25, YELLOW), "= konstant", size=25, color=YELLOW),
+            _text("T und V konstant", 15, GREY_A),
         ).arrange(RIGHT, buff=0.22).to_edge(DOWN, buff=0.32)
         assumptions = _text(
-            "İdeal gaz: tanecik hacmi ihmal • çarpışmalar esnek • çarpışma dışında etkileşim yok",
+            "Ideales Gas: Eigenvolumen vernachlässigt • elastische Stöße • keine Wechselwirkung außer Stößen",
             15,
             GREY_A,
         ).next_to(amount_relation, UP, buff=0.2)
@@ -2617,15 +2784,15 @@ class Chapter9(ThreeDScene):
 
 
 class Chapter10a(ThreeDScene):
-    """Bölüm 10a — Konduktion (iletim)."""
+    """Kapitel 10a: Wärmeleitung (Konduktion)."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("KONDUKTION  •  İLETİM", 31, BLUE_A).to_edge(UP, buff=0.28)
+        title = _text("WÄRMELEITUNG  •  KONDUKTION", 31, BLUE_A).to_edge(UP, buff=0.28)
         subtitle = _text(
-            "Türk çayında metal kaşık: sıcak uçtan soğuk sapa enerji aktarımı",
+            "Metalllöffel im türkischen Tee: Energie fließt vom heißen Ende zum kalten Stiel",
             18,
             GREY_A,
         ).next_to(title, DOWN, buff=0.1)
@@ -2807,8 +2974,8 @@ class Chapter10a(ThreeDScene):
             fill_opacity=1,
             stroke_width=0,
         )
-        mola_label = _text("Mola • soğuk sap", 17, ORANGE).move_to([4.1, 1.45, 0])
-        hot_label = _text("Çayın içindeki sıcak uç", 17, ORANGE).move_to(
+        mola_label = _text("Mola • kalter Stiel", 17, ORANGE).move_to([4.1, 1.45, 0])
+        hot_label = _text("Heißes Ende im Tee", 17, ORANGE).move_to(
             [-4.6, -1.9, 0]
         )
         heat_flow = Arrow(
@@ -2819,9 +2986,9 @@ class Chapter10a(ThreeDScene):
             buff=0.08,
             max_tip_length_to_length_ratio=0.055,
         )
-        flow_label = _text("Isı akışı", 17, YELLOW).move_to([0.2, 1.95, 0])
+        flow_label = _text("Wärmefluss", 17, YELLOW).move_to([0.2, 1.95, 0])
         macro_note = _text(
-            "Sıcak çay  →  metal kaşık  →  daha soğuk sap",
+            "Heißer Tee  →  Metalllöffel  →  kälterer Stiel",
             19,
             WHITE,
         ).to_edge(DOWN, buff=0.35)
@@ -2884,12 +3051,16 @@ class Chapter10a(ThreeDScene):
         self.wait(2)
 
         zoom_caption = _text(
-            "Şimdi kaşığın metal örgüsüne yaklaşıyoruz",
+            "Jetzt zoomen wir in das Metallgitter des Löffels",
             21,
             YELLOW,
         ).to_edge(DOWN, buff=0.35)
+        # Überblenden statt Transform: Bei Transform entstehen neue Buchstaben, die nicht
+        # im Bild fixiert sind; beim anschließenden Zoom fliegen sie dann auseinander.
+        self.add_fixed_in_frame_mobjects(zoom_caption)
         self.play(
-            Transform(macro_note, zoom_caption),
+            FadeOut(macro_note),
+            FadeIn(zoom_caption),
             run_time=0.6,
         )
         self.move_camera(
@@ -2897,17 +3068,15 @@ class Chapter10a(ThreeDScene):
             frame_center=[0.65, 0.93, 0],
             run_time=1.6,
         )
-        micro_title = _text("METAL KAŞIĞIN KRİSTAL ÖRGÜSÜ", 25, BLUE_A).to_edge(
+        micro_title = _text("KRISTALLGITTER DES METALLLÖFFELS", 25, BLUE_A).to_edge(
             UP, buff=0.38
         )
         micro_subtitle = _text(
-            "Yaklaşık 1.500 atom • büyütülmüş model, ölçekli değildir",
+            "Etwa 1.500 Atome • vergrößertes Modell, nicht maßstabsgetreu",
             17,
             GREY_A,
         ).next_to(micro_title, DOWN, buff=0.12)
-        self.remove_fixed_in_frame_mobjects(
-            subtitle, mola_label, hot_label, flow_label, macro_note, zoom_caption
-        )
+        self.add_fixed_in_frame_mobjects(micro_title)
         self.play(
             *[FadeOut(mobject) for mobject in macro_objects],
             FadeOut(heat_flow),
@@ -2915,13 +3084,17 @@ class Chapter10a(ThreeDScene):
             FadeOut(hot_label),
             FadeOut(flow_label),
             FadeOut(subtitle),
-            FadeOut(macro_note),
-            Transform(title, micro_title),
+            FadeOut(zoom_caption),
+            FadeOut(title),
+            FadeIn(micro_title),
             run_time=1.7,
         )
-        self.remove_fixed_in_frame_mobjects(subtitle, zoom_caption)
-        self.remove_fixed_in_frame_mobjects(title)
-        self.add_fixed_in_frame_mobjects(title, micro_subtitle)
+        # Erst nach dem Ausblenden aus der Fixierung lösen (sonst springen sie beim Zoom).
+        self.remove_fixed_in_frame_mobjects(
+            subtitle, mola_label, hot_label, flow_label, macro_note, zoom_caption, title
+        )
+        title = micro_title
+        self.add_fixed_in_frame_mobjects(micro_subtitle)
         self.remove(
             *macro_objects,
             heat_flow,
@@ -2989,7 +3162,6 @@ class Chapter10a(ThreeDScene):
         atom_count = columns * rows * layers
         base_positions = np.asarray(atom_points)
         column_indices = np.asarray(atom_columns)
-        row_indices = np.asarray(atom_rows)
         layer_indices = np.asarray(atom_layers)
         base_colors = np.asarray(
             [
@@ -3005,26 +3177,30 @@ class Chapter10a(ThreeDScene):
                 (base_colors, np.full(atom_count, 0.98))
             ),
         )
-        wave_clock = ValueTracker(-3.0)
 
-        def animate_lattice_wave(mob):
-            wave_position = wave_clock.get_value()
-            envelope = np.exp(
-                -0.5 * ((column_indices - wave_position) / 1.75) ** 2
-            )
-            phase = 2 * PI * (wave_position * 0.8 - column_indices * 0.16)
-            alternating = np.where(row_indices % 2 == 0, 1.0, -1.0)
-            vertical_displacement = (
-                0.14 * envelope * np.sin(phase) * alternating
-            )
-            horizontal_displacement = 0.035 * envelope * np.cos(phase)
+        # Wärmeleitung als Temperaturprofil: Das Ende im Tee bleibt heiß, die
+        # "Wärmefront" wandert zum Stiel. Jedes Atom schwingt ungeordnet um seine
+        # Ruhelage; die Amplitude wächst mit der örtlichen Temperatur.
+        # (Vorher lief ein einzelner Wellenpuls durch, und das heiße Ende kühlte
+        # danach wieder ab, obwohl es noch im Tee steckt.)
+        heat_front = ValueTracker(2.0)
+        phase_rng = np.random.default_rng(1011)
+        phase_x = phase_rng.uniform(0, TAU, atom_count)
+        phase_y = phase_rng.uniform(0, TAU, atom_count)
+        vibration = {"time": 0.0}
+
+        def animate_lattice_heat(mob, dt):
+            vibration["time"] += dt
+            heat = 1 / (1 + np.exp((column_indices - heat_front.get_value()) / 2.5))
+            amplitude = 0.02 + 0.13 * heat
+            angle = 2 * PI * 3.0 * vibration["time"]
             mob.points[:] = base_positions
-            mob.points[:, 0] += horizontal_displacement
-            mob.points[:, 1] += vertical_displacement
-            color_mix = np.clip(envelope * 0.95, 0, 0.95)[:, np.newaxis]
+            mob.points[:, 0] += 0.45 * amplitude * np.sin(angle + phase_x)
+            mob.points[:, 1] += amplitude * np.sin(angle * 1.13 + phase_y)
+            color_mix = np.clip(heat * 0.95, 0, 0.95)[:, np.newaxis]
             mob.rgbas[:, :3] = base_colors * (1 - color_mix) + hot_color * color_mix
 
-        atom_cloud.add_updater(animate_lattice_wave)
+        atom_cloud.add_updater(animate_lattice_heat)
         energy_direction = Arrow(
             LEFT * 4.7 + UP * 2.55,
             RIGHT * 4.7 + UP * 2.55,
@@ -3032,10 +3208,10 @@ class Chapter10a(ThreeDScene):
             stroke_width=3,
             max_tip_length_to_length_ratio=0.055,
         )
-        hot_end = _text("SICAK UÇ", 15, ORANGE).move_to(LEFT * 5.0 + UP * 2.8)
-        cold_end = _text("SOĞUK SAP", 15, BLUE_A).move_to(RIGHT * 5.0 + UP * 2.8)
+        hot_end = _text("HEISSES ENDE", 15, ORANGE).move_to(LEFT * 5.0 + UP * 2.8)
+        cold_end = _text("KALTER STIEL", 15, BLUE_A).move_to(RIGHT * 5.0 + UP * 2.8)
         structure_note = _text(
-            "Atomlar yerlerinde titreşir; örgü boyunca yayılan şey enerjidir.",
+            "Die Atome schwingen an ihrem Platz; weitergegeben wird nur die Energie.",
             18,
             WHITE,
         ).to_edge(DOWN, buff=0.35)
@@ -3052,7 +3228,7 @@ class Chapter10a(ThreeDScene):
             run_time=2.4,
         )
         count_note = _text(
-            f"{atom_count} atom gösteriliyor — her nokta bir metal atomudur.",
+            f"{atom_count} Atome dargestellt: Jeder Punkt ist ein Metallatom.",
             16,
             GREY_A,
         ).next_to(structure_note, UP, buff=0.16)
@@ -3061,23 +3237,22 @@ class Chapter10a(ThreeDScene):
         self.wait(4)
 
         vibration_note = _text(
-            "Yakın plan: sıcak uçtaki atomların titreşim genliği artıyor.",
+            "Nahaufnahme: Am heißen Ende schwingen die Atome stärker.",
             18,
             ORANGE,
         ).to_edge(DOWN, buff=0.35)
         self.play(Transform(structure_note, vibration_note), run_time=0.6)
         self.wait(2)
-        self.add(wave_clock)
         self.play(
-            wave_clock.animate.set_value(columns + 2),
+            heat_front.animate.set_value(columns * 0.5),
             run_time=8.5,
             rate_func=linear,
         )
         self.wait(2)
 
         electron_note = _text(
-            "Gerçek metalde serbest elektronlar da enerji taşır.\n"
-            "Bu görselleştirme, atom örgüsündeki titreşim katkısını izole eder.",
+            "In echten Metallen transportieren freie Elektronen sogar den größten Teil der Wärme.\n"
+            "Diese Darstellung zeigt nur den Beitrag der Gitterschwingungen.",
             18,
             GREY_A,
         ).to_edge(DOWN, buff=0.35)
@@ -3091,16 +3266,16 @@ class Chapter10a(ThreeDScene):
         self.remove_fixed_in_frame_mobjects(structure_note, count_note)
         self.wait(4)
 
-        wave_clock.set_value(-3.0)
+        # Am Ende bleibt ein Temperaturgefälle: Der Stiel ist warm, aber kühler als das Ende im Tee.
         self.play(
-            wave_clock.animate.set_value(columns + 2),
+            heat_front.animate.set_value(columns - 3),
             run_time=7.5,
             rate_func=linear,
         )
         self.wait(2)
 
         final_note = _text(
-            "Sıcak çay → kaşığın atom örgüsü → daha soğuk sap",
+            "Heißer Tee → Atomgitter des Löffels → kälterer Stiel",
             21,
             YELLOW,
         ).to_edge(DOWN, buff=0.35)
@@ -3109,17 +3284,17 @@ class Chapter10a(ThreeDScene):
 
 
 class Chapter10b(ThreeDScene):
-    """Bölüm 10b — Konvektion (taşınım)."""
+    """Kapitel 10b: Wärmeströmung (Konvektion)."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("KONVEKTION  •  TAŞINIM", 32, BLUE_A).to_edge(
+        title = _text("WÄRMESTRÖMUNG  •  KONVEKTION", 32, BLUE_A).to_edge(
             UP, buff=0.3
         )
         subtitle = _text(
-            "Sıvı ve gazlarda enerji, akışkanın hareketiyle taşınır",
+            "In Flüssigkeiten und Gasen wird Energie mit der strömenden Materie transportiert",
             19,
             GREY_A,
         ).next_to(title, DOWN, buff=0.12)
@@ -3146,15 +3321,17 @@ class Chapter10b(ThreeDScene):
             stroke_color=BLUE_C,
             stroke_width=0.5,
         ).move_to([-2.1, -0.12, 0])
+        # Heizer unter der linken Seite: dort steigt das warme Wasser auf,
+        # rechts sinkt das kühlere ab (vorher lag der Heizer unter beiden Seiten).
         heater = RoundedRectangle(
-            width=1.25,
+            width=0.95,
             height=0.22,
             corner_radius=0.08,
             color=ORANGE,
             fill_color=RED_E,
             fill_opacity=0.95,
-        ).move_to([-2.1, -1.65, 0])
-        heater_label = _text("Isıtıcı", 17, ORANGE).next_to(
+        ).move_to([-2.7, -1.65, 0])
+        heater_label = _text("Heizer", 17, ORANGE).next_to(
             heater, DOWN, buff=0.1
         )
         self.play(Create(vessel), FadeIn(water), FadeIn(heater), run_time=1.4)
@@ -3207,12 +3384,12 @@ class Chapter10b(ThreeDScene):
         )
 
         warm_note = _text(
-            "Isınan su genleşir,\nyoğunluğu azalır ve yükselir.",
+            "Erwärmtes Wasser dehnt sich aus,\nseine Dichte sinkt, es steigt auf.",
             19,
             ORANGE,
         ).move_to([2.85, 0.85, 0])
         cool_note = _text(
-            "Soğuyan, yoğun su\nalıçar ve aşağı iner.",
+            "Abgekühltes, dichteres Wasser\nsinkt nach unten.",
             19,
             BLUE_A,
         ).move_to([2.85, -0.25, 0])
@@ -3221,6 +3398,9 @@ class Chapter10b(ThreeDScene):
         self.wait(3)
         self.wait(4)
 
+        # Alle drei Teilchen strömen im geschlossenen Kreislauf mit.
+        loop_count = len(loop_points)
+        offsets = [0, 4, 6]
         molecules = VGroup(
             Dot(loop_points[0], radius=0.12, color=ORANGE),
             Dot(loop_points[4], radius=0.09, color=RED_C),
@@ -3229,21 +3409,26 @@ class Chapter10b(ThreeDScene):
         mola_label = _text("Mola", 17, ORANGE).next_to(
             molecules[0], LEFT, buff=0.12
         )
+        mola_label.add_updater(lambda mob: mob.next_to(molecules[0], LEFT, buff=0.12))
         self.add_fixed_in_frame_mobjects(mola_label)
         self.play(FadeIn(molecules), FadeIn(mola_label), run_time=0.5)
         for loop in range(4):
-            for index, point in enumerate(loop_points[1:], start=1):
-                self.play(
-                    molecules[0].animate.move_to(point),
-                    run_time=0.32,
-                    rate_func=linear,
-                )
-                mola_label.next_to(molecules[0], LEFT, buff=0.12)
+            for step in range(1, loop_count + 1):
+                animations = []
+                for index, (molecule, offset) in enumerate(zip(molecules, offsets)):
+                    point_index = (step + offset) % loop_count
+                    animation = molecule.animate.move_to(loop_points[point_index])
+                    if index > 0:
+                        # Aufsteigende Seite und oben warm, absteigende Seite kühl.
+                        animation = animation.set_color(RED_C if point_index <= 4 else BLUE_A)
+                    animations.append(animation)
+                self.play(*animations, run_time=0.32, rate_func=linear)
             if loop == 0:
                 self.wait(1)
+        mola_label.clear_updaters()
 
         density_note = _text(
-            "Sıcaklık farkı → yoğunluk farkı → dolaşım akımı",
+            "Temperaturunterschied → Dichteunterschied → Strömungskreislauf",
             21,
             YELLOW,
         ).to_edge(DOWN, buff=0.4)
@@ -3254,17 +3439,17 @@ class Chapter10b(ThreeDScene):
 
 
 class Chapter10c(ThreeDScene):
-    """Bölüm 10c — Strahlung (ışıma)."""
+    """Kapitel 10c: Wärmestrahlung."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("STRAHLUNG  •  IŞIMA", 32, BLUE_A).to_edge(
+        title = _text("WÄRMESTRAHLUNG", 32, BLUE_A).to_edge(
             UP, buff=0.3
         )
         subtitle = _text(
-            "Elektromanyetik dalgalarla enerji aktarımı",
+            "Energieübertragung durch elektromagnetische Wellen",
             19,
             GREY_A,
         ).next_to(title, DOWN, buff=0.12)
@@ -3283,14 +3468,14 @@ class Chapter10c(ThreeDScene):
             Circle(radius=0.92, color=ORANGE, stroke_opacity=0.7),
             Circle(radius=1.08, color=RED_C, stroke_opacity=0.35),
         ).move_to(sun.get_center())
-        sun_label = _text("Güneş", 19, YELLOW).next_to(sun, DOWN, buff=0.2)
+        sun_label = _text("Sonne", 19, YELLOW).next_to(sun, DOWN, buff=0.2)
         target = Cube(
             side_length=1.25,
             fill_color=GREY_D,
             fill_opacity=0.95,
             stroke_color=WHITE,
         ).move_to([2.55, -0.05, 0])
-        target_label = _text("Yüzey", 18, WHITE).next_to(target, DOWN, buff=0.2)
+        target_label = _text("Oberfläche", 18, WHITE).next_to(target, DOWN, buff=0.2)
         self.play(
             FadeIn(sun_glow),
             FadeIn(sun),
@@ -3314,9 +3499,9 @@ class Chapter10c(ThreeDScene):
                 for index, level in enumerate(ray_levels)
             ]
         )
-        vacuum = _text("Uzay boşluğu", 17, GREY_A).move_to([-0.25, 1.05, 0])
+        vacuum = _text("Leerer Weltraum", 17, GREY_A).move_to([-0.25, 1.05, 0])
         no_medium = _text(
-            "Madde gerekmez",
+            "Kein Stoff nötig",
             18,
             TEAL_A,
         ).move_to([-0.25, -1.05, 0])
@@ -3364,21 +3549,22 @@ class Chapter10c(ThreeDScene):
         self.play(FadeOut(repeat_packets), run_time=0.25)
 
         wave_subtitle = _text(
-            "Yakın plan: birbirine dik elektrik ve manyetik alanlar",
+            "Nahaufnahme: elektrisches und magnetisches Feld stehen senkrecht aufeinander",
             19,
             GREY_A,
         ).next_to(title, DOWN, buff=0.12)
         wave_heading = _text(
-            "ELEKTROMANYETİK DALGA",
+            "ELEKTROMAGNETISCHE WELLE",
             18,
             WHITE,
         ).to_edge(DOWN, buff=0.72)
         wave_legend = _text(
-            "Mavi: elektrik alan E     Kırmızı: manyetik alan B     İlerleme yönü: →",
+            "Blau: elektrisches Feld E     Rot: magnetisches Feld B     Ausbreitungsrichtung: →",
             16,
             GREY_A,
         ).to_edge(DOWN, buff=0.28)
-        self.add_fixed_in_frame_mobjects(wave_heading, wave_legend)
+        self.add_fixed_in_frame_mobjects(wave_heading, wave_legend, wave_subtitle)
+        # Überblenden statt Transform, damit der Untertitel beim Drehen der Kamera fixiert bleibt.
         self.play(
             FadeOut(sun_glow),
             FadeOut(sun),
@@ -3388,10 +3574,12 @@ class Chapter10c(ThreeDScene):
             FadeOut(rays),
             FadeOut(vacuum),
             FadeOut(no_medium),
-            Transform(subtitle, wave_subtitle),
+            FadeOut(subtitle),
+            FadeIn(wave_subtitle),
             run_time=0.8,
         )
-        self.remove_fixed_in_frame_mobjects(vacuum, no_medium)
+        self.remove_fixed_in_frame_mobjects(vacuum, no_medium, subtitle)
+        subtitle = wave_subtitle
         self.move_camera(
             phi=50 * DEGREES,
             theta=-45 * DEGREES,
@@ -3474,7 +3662,7 @@ class Chapter10c(ThreeDScene):
         self.wait(1)
 
         absorption_subtitle = _text(
-            "Yakın plan: yüzey ışınımı soğurur ve ısınır",
+            "Nahaufnahme: Die Oberfläche absorbiert die Strahlung und erwärmt sich",
             19,
             GREY_A,
         ).next_to(title, DOWN, buff=0.12)
@@ -3496,7 +3684,7 @@ class Chapter10c(ThreeDScene):
         )
 
         absorption_title = _text(
-            "SOĞURULMA: DALGA ENERJİSİ YÜZEYE AKTARILIR",
+            "ABSORPTION: DIE ENERGIE DER WELLE GEHT AUF DIE OBERFLÄCHE ÜBER",
             19,
             ORANGE,
         ).to_edge(DOWN, buff=0.4)
@@ -3521,7 +3709,7 @@ class Chapter10c(ThreeDScene):
             color=ORANGE,
         )
         absorption_note = _text(
-            "Enerji taneciklere geçer; titreşimleri ve sıcaklıkları artar.",
+            "Die Energie geht auf die Teilchen über; sie schwingen stärker, die Temperatur steigt.",
             16,
             GREY_A,
         ).to_edge(DOWN, buff=0.08)
@@ -3574,7 +3762,7 @@ class Chapter10c(ThreeDScene):
         self.wait(3)
 
         comparison = _text(
-            "İletim: atomdan atoma     Taşınım: akışkanla     Işıma: dalgayla",
+            "Leitung: von Atom zu Atom     Strömung: mit dem Fluid     Strahlung: mit der Welle",
             18,
             WHITE,
         ).to_edge(DOWN, buff=0.4)
@@ -3591,17 +3779,17 @@ class Chapter10c(ThreeDScene):
 
 
 class Chapter11(ThreeDScene):
-    """Bölüm 11 — termodinamik yolculuğunun özeti."""
+    """Kapitel 11: Zusammenfassung der Reise durch die Thermodynamik."""
 
     def construct(self):
         self.camera.background_color = BLACK
         self.set_camera_orientation(phi=0, theta=-90 * DEGREES, zoom=1.0)
 
-        title = _text("BİR MOLEKÜLDEN BÜTÜN SİSTEME", 31, BLUE_A).to_edge(
+        title = _text("VOM MOLEKÜL ZUM GANZEN SYSTEM", 31, BLUE_A).to_edge(
             UP, buff=0.35
         )
         subtitle = _text(
-            "Termodinamik yolculuğunun kavram haritası",
+            "Begriffslandkarte der Reise durch die Thermodynamik",
             19,
             GREY_A,
         ).next_to(title, DOWN, buff=0.12)
@@ -3609,10 +3797,10 @@ class Chapter11(ThreeDScene):
         self.play(FadeIn(title), FadeIn(subtitle), run_time=0.8)
 
         card_specs = [
-            ("P  •  BASINÇ", "Duvar çarpışmalarının\nkuvveti / yüzey alanı", ORANGE, [-4.55, 1.2, 0]),
-            ("V  •  HACİM", "Gazın kapladığı\nbölge", BLUE_B, [4.55, 1.2, 0]),
-            ("n  •  MADDE MİKTARI", "Gaz miktarı,\nmol cinsinden", TEAL_A, [-4.55, -1.2, 0]),
-            ("T  •  MUTLAK SICAKLIK", "Ortalama öteleme enerjisiyle ilişkili\nKelvin cinsinden", YELLOW, [4.55, -1.2, 0]),
+            ("p  •  DRUCK", "Kraft der Wandstöße\npro Fläche", ORANGE, [-4.55, 1.2, 0]),
+            ("V  •  VOLUMEN", "Raum, den das Gas\neinnimmt", BLUE_B, [4.55, 1.2, 0]),
+            ("n  •  STOFFMENGE", "Gasmenge,\nin Mol", TEAL_A, [-4.55, -1.2, 0]),
+            ("T  •  ABSOLUTE TEMPERATUR", "Hängt mit der mittleren Translationsenergie\nzusammen, in Kelvin", YELLOW, [4.55, -1.2, 0]),
         ]
 
         def make_card(heading, detail, color, center, width=3.25, height=1.45):
@@ -3625,12 +3813,14 @@ class Chapter11(ThreeDScene):
                 fill_color=color,
                 fill_opacity=0.12,
             ).move_to(center)
-            heading_text = _text(heading, 17, color).move_to(
-                background.get_center() + UP * 0.34
-            )
-            detail_text = _text(detail, 14, WHITE).move_to(
-                background.get_center() + DOWN * 0.22
-            )
+            heading_text = _text(heading, 17, color)
+            if heading_text.width > width - 0.2:
+                heading_text.scale_to_fit_width(width - 0.2)
+            heading_text.move_to(background.get_center() + UP * 0.34)
+            detail_text = _text(detail, 14, WHITE)
+            if detail_text.width > width - 0.2:
+                detail_text.scale_to_fit_width(width - 0.2)
+            detail_text.move_to(background.get_center() + DOWN * 0.22)
             return VGroup(background, heading_text, detail_text)
 
         map_cards = VGroup(
@@ -3639,7 +3829,7 @@ class Chapter11(ThreeDScene):
                 for heading, detail, color, center in card_specs
             ]
         )
-        formula = _text("PV = nRT", 48, WHITE).move_to(ORIGIN)
+        formula = _text("pV = nRT", 48, WHITE).move_to(ORIGIN)
         connectors = VGroup(
             Line([-2.92, 0.78, 0], [-1.75, 0.35, 0], color=ORANGE, stroke_width=2),
             Line([2.92, 0.78, 0], [1.75, 0.35, 0], color=BLUE_B, stroke_width=2),
@@ -3654,7 +3844,7 @@ class Chapter11(ThreeDScene):
             run_time=2.2,
         )
         kelvin_note = _text(
-            "T[K] = t[°C] + 273,15",
+            "T [K] = t [°C] + 273,15",
             17,
             YELLOW,
         ).next_to(formula, DOWN, buff=0.45)
@@ -3663,19 +3853,19 @@ class Chapter11(ThreeDScene):
         self.wait(4)
 
         law_title = _text(
-            "GAZ YASALARI, DEĞİŞKENLERDEN BAZILARI SABİT TUTULUNCA ÇIKAR",
+            "DIE GASGESETZE ENTSTEHEN, WENN MAN EINIGE GRÖSSEN KONSTANT HÄLT",
             20,
             BLUE_A,
         ).move_to([0, 2.45, 0])
         law_specs = [
-            ("BOYLE", "T ve n sabit", "P · V = sabit", BLUE_B),
-            ("GAY-LUSSAC", "V ve n sabit", "P / T = sabit", ORANGE),
-            ("CHARLES", "P ve n sabit", "V / T = sabit", TEAL_A),
+            ("BOYLE-MARIOTTE", "T und n konstant", "p · V = konstant", BLUE_B),
+            ("AMONTONS", "V und n konstant", "p / T = konstant", ORANGE),
+            ("GAY-LUSSAC", "p und n konstant", "V / T = konstant", TEAL_A),
         ]
         law_cards = VGroup(
             *[
                 make_card(
-                    f"{name} YASASI",
+                    f"GESETZ VON {name}",
                     f"{condition}\n{relation}",
                     color,
                     [x, 0.25, 0],
@@ -3688,7 +3878,7 @@ class Chapter11(ThreeDScene):
             ]
         )
         law_takeaway = _text(
-            "Her deneyde hangi değişkenlerin sabit olduğuna dikkat et.",
+            "Achte bei jedem Versuch darauf, welche Größen konstant bleiben.",
             18,
             WHITE,
         ).to_edge(DOWN, buff=0.42)
@@ -3706,14 +3896,14 @@ class Chapter11(ThreeDScene):
         self.wait(5)
 
         transfer_title = _text(
-            "ENERJİ ÜÇ YOLLA AKTARILABİLİR",
+            "ENERGIE KANN AUF DREI WEGEN ÜBERTRAGEN WERDEN",
             23,
             BLUE_A,
         ).move_to([0, 2.5, 0])
         transfer_specs = [
-            ("KONDUKTION  •  İLETİM", "Atomdan atoma", ORANGE),
-            ("KONVEKTION  •  TAŞINIM", "Akışkanın hareketiyle", TEAL_A),
-            ("STRAHLUNG  •  IŞIMA", "Elektromanyetik dalgayla", YELLOW),
+            ("WÄRMELEITUNG", "Von Atom zu Atom", ORANGE),
+            ("WÄRMESTRÖMUNG", "Mit dem strömenden Fluid", TEAL_A),
+            ("WÄRMESTRAHLUNG", "Mit elektromagnetischen Wellen", YELLOW),
         ]
         transfer_cards = VGroup(
             *[
@@ -3784,17 +3974,17 @@ class Chapter11(ThreeDScene):
         self.wait(4)
 
         takeaway = _text(
-            "Sıcaklık: ortalama enerji     •     İç enerji: toplam enerji",
+            "Temperatur: mittlere Energie     •     Innere Energie: gesamte Energie",
             22,
             YELLOW,
         ).move_to([0, -1.4, 0])
         heat_note = _text(
-            "Isı, depolanan bir şey değil; sıcaklık farkıyla gerçekleşen enerji aktarımıdır.",
+            "Wärme wird nicht gespeichert; sie ist Energieübertragung wegen eines Temperaturunterschieds.",
             17,
             WHITE,
         ).move_to([0, -2.0, 0])
         final_line = _text(
-            "Artık formülü yalnızca bilmiyorsun; molekülden başlayarak nedenini de biliyorsun.",
+            "Jetzt kennst du nicht nur die Formel, sondern auch ihren Grund, vom Molekül aus gedacht.",
             17,
             BLUE_A,
         ).to_edge(DOWN, buff=0.3)
